@@ -1,0 +1,25 @@
+grammar es.unican.lavoisier.Lavoisier with org.eclipse.xtext.common.Terminals
+
+generate lavoisier "http://www.unican.es/lavoisier/Lavoisier"
+
+ProjectionElements:
+  "domainModelNSURI" + domainModelNSURI=STRING
+  "domainModelInstance" + domainModelInstance=STRING
+  (projections+=Projection)*;
+
+Projection:
+  'dataset' name=ID '{'
+    'mainClass' mainClass=MainClass';'
+    ('refers_to' referredClasses+=ReferredClass';')*
+  '}';
+
+MainClass:
+  name=ID (attributeFilter=AttributeFilter)?;
+
+ReferredClass:
+  name=ID 'through' reference=ID
+    ('identified_by' referredObjectId=ID)?
+    (attributeFilter=AttributeFilter)?;
+
+AttributeFilter:
+  'including' '['attributes+=ID (',' attributes+=ID)*']';

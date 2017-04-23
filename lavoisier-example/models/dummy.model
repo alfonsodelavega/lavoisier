@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="ASCII"?>
+<xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dummy="http://dummy.domainModels.flandm.unican.es">
+  <dummy:A>
+    <b y="1.0" z="2.0"/>
+    <ds name="d0"/>
+    <ds name="d1" m="1.0"/>
+    <ds name="d2" m="2.0"/>
+    <ds name="d3" m="3.0"/>
+    <ds name="d4" m="4.0"/>
+    <e xsi:type="dummy:F" eName="E0" fString="F0" fDouble="1000.0"/>
+  </dummy:A>
+  <dummy:A x="1.0">
+    <b y="2.0" z="3.0"/>
+    <ds name="d0" l="3.0"/>
+    <ds name="d1" l="3.0" m="1.0"/>
+    <ds name="d2" l="3.0" m="2.0"/>
+    <ds name="d3" l="3.0" m="3.0"/>
+    <ds name="d4" l="3.0" m="4.0"/>
+    <e xsi:type="dummy:F" eName="E1" fString="F1" fDouble="1001.0"/>
+  </dummy:A>
+  <dummy:A x="2.0">
+    <b y="3.0" z="4.0"/>
+    <ds name="d0" l="6.0"/>
+    <ds name="d1" l="6.0" m="1.0"/>
+    <ds name="d2" l="6.0" m="2.0"/>
+    <ds name="d3" l="6.0" m="3.0"/>
+    <ds name="d4" l="6.0" m="4.0"/>
+    <e xsi:type="dummy:F" eName="E2" fString="F2" fDouble="1002.0"/>
+  </dummy:A>
+  <dummy:A x="3.0">
+    <b y="4.0" z="5.0"/>
+    <ds name="d0" l="9.0"/>
+    <ds name="d1" l="9.0" m="1.0"/>
+    <ds name="d2" l="9.0" m="2.0"/>
+    <ds name="d3" l="9.0" m="3.0"/>
+    <ds name="d4" l="9.0" m="4.0"/>
+    <e xsi:type="dummy:F" eName="E3" fString="F3" fDouble="1003.0"/>
+  </dummy:A>
+  <dummy:A x="4.0">
+    <b y="5.0" z="6.0"/>
+    <ds name="d0" l="12.0"/>
+    <ds name="d1" l="12.0" m="1.0"/>
+    <ds name="d2" l="12.0" m="2.0"/>
+    <ds name="d3" l="12.0" m="3.0"/>
+    <ds name="d4" l="12.0" m="4.0"/>
+    <e xsi:type="dummy:F" eName="E4" fString="F4" fDouble="1004.0"/>
+  </dummy:A>
+  <dummy:A x="5.0" en="value2">
+    <b y="15.0" z="25.0"/>
+    <ds name="d0" l="15.0"/>
+    <ds name="d1" l="15.0" m="1.0"/>
+    <ds name="d2" l="15.0" m="2.0"/>
+    <ds name="d3" l="15.0" m="3.0"/>
+    <ds name="d4" l="15.0" m="4.0"/>
+    <e xsi:type="dummy:F" eName="E5" fString="F50" fDouble="4005.0"/>
+  </dummy:A>
+  <dummy:A x="6.0" en="value2">
+    <b y="16.0" z="26.0"/>
+    <ds name="d0" l="18.0"/>
+    <ds name="d1" l="18.0" m="1.0"/>
+    <ds name="d2" l="18.0" m="2.0"/>
+    <ds name="d3" l="18.0" m="3.0"/>
+    <ds name="d4" l="18.0" m="4.0"/>
+    <e xsi:type="dummy:F" eName="E6" fString="F60" fDouble="4006.0"/>
+  </dummy:A>
+  <dummy:A x="7.0" en="value2">
+    <b y="17.0" z="27.0"/>
+    <ds name="d0" l="21.0"/>
+    <ds name="d1" l="21.0" m="1.0"/>
+    <ds name="d2" l="21.0" m="2.0"/>
+    <ds name="d3" l="21.0" m="3.0"/>
+    <ds name="d4" l="21.0" m="4.0"/>
+    <e xsi:type="dummy:F" eName="E7" fString="F70" fDouble="4007.0"/>
+  </dummy:A>
+  <dummy:A x="8.0" en="value3">
+    <b y="108.0" z="208.0">
+      <c k="316.0"/>
+    </b>
+    <ds name="d0" l="24.0"/>
+    <ds name="d1" l="24.0" m="1.0"/>
+    <ds name="d2" l="24.0" m="2.0"/>
+    <ds name="d3" l="24.0" m="3.0"/>
+    <ds name="d4" l="24.0" m="4.0"/>
+    <e xsi:type="dummy:G" eName="E8" gString="G1"/>
+  </dummy:A>
+  <dummy:A x="9.0" en="value3">
+    <b y="109.0" z="209.0">
+      <c k="318.0"/>
+    </b>
+    <ds name="d0" l="27.0"/>
+    <ds name="d1" l="27.0" m="1.0"/>
+    <ds name="d2" l="27.0" m="2.0"/>
+    <ds name="d3" l="27.0" m="3.0"/>
+    <ds name="d4" l="27.0" m="4.0"/>
+    <e xsi:type="dummy:G" eName="E9" gString="G2"/>
+  </dummy:A>
+</xmi:XMI>

@@ -1,0 +1,32 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: es.unican.lavoisier
+Bundle-Vendor: My Company
+Bundle-Version: 1.0.0.qualifier
+Bundle-SymbolicName: es.unican.lavoisier; singleton:=true
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.eclipse.xtext;visibility:=reexport,
+ org.eclipse.equinox.common;bundle-version="3.5.0",
+ org.eclipse.xtext.util,
+ org.eclipse.emf.ecore,
+ org.eclipse.emf.common,
+ org.eclipse.xtext.xbase.lib,
+ org.antlr.runtime,
+ org.eclipse.xtext.common.types,
+ org.objectweb.asm;bundle-version="[5.0.1,6.0.0)";resolution:=optional,
+ es.unican.lavoisier.domainModels;bundle-version="1.0.0"
+Import-Package: org.apache.log4j
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Export-Package: es.unican.lavoisier,
+ es.unican.lavoisier.domainModelProvider,
+ es.unican.lavoisier.formatting,
+ es.unican.lavoisier.generator,
+ es.unican.lavoisier.lavoisier,
+ es.unican.lavoisier.lavoisier.impl,
+ es.unican.lavoisier.lavoisier.util,
+ es.unican.lavoisier.parser.antlr,
+ es.unican.lavoisier.parser.antlr.internal,
+ es.unican.lavoisier.scoping,
+ es.unican.lavoisier.serializer,
+ es.unican.lavoisier.services,
+ es.unican.lavoisier.validation
