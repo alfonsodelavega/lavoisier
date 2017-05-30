@@ -90,7 +90,8 @@ class LavoisierGenerator implements IGenerator {
   }
 
 
-  def filterAttributes(EList<EAttribute> attributes, AttributeFilter filter) {
+  def List<String> filterAttributes(EList<EAttribute> attributes,
+                                    AttributeFilter filter) {
     var List<String> filteredAttributes = null
     if (filter != null) {
       filteredAttributes = filter.attributes
@@ -102,7 +103,8 @@ class LavoisierGenerator implements IGenerator {
   }
 
 
-  def filterEAttributes(EList<EAttribute> attributes, AttributeFilter filter) {
+  def List<EAttribute> filterEAttributes(EList<EAttribute> attributes,
+                                         AttributeFilter filter) {
     var List<EAttribute> filteredEAttributes = null
     if (filter == null) {
       filteredEAttributes = attributes
@@ -131,6 +133,22 @@ class LavoisierGenerator implements IGenerator {
   }
 
 
+  def AttributeFilter prepareAttributeFilter(AttributeFilter filter, EClass eClass,
+        String referredObjectId) {
+    var resFilter = filter
+    if (resFilter == null) {
+      // create it to hold every attribute but the referred id attribute
+      val eFactory = LavoisierFactory.eINSTANCE
+      resFilter = eFactory.createAttributeFilter
+      for (attribute : eClass.EAttributes) {
+        resFilter.attributes.add(attribute.name)
+      }
+    }
+    resFilter.attributes.remove(referredObjectId)
+    return resFilter
+  }
+
+
   def private void includeColumnNames(Projection projection,
       StringBuilder dataFileContent) {
     val mainEClass =
@@ -147,13 +165,15 @@ class LavoisierGenerator implements IGenerator {
       val reference =
         mainEClass.getEStructuralFeature(refClass.reference) as EReference
       if (reference.upperBound == 1) {
-        if (refEClass.isAbstract()) {
-          // first, class and superclass attributes
+        // reference class and superclasses attributes
+        var List<String> refAttributes =
+          filterAttributes(refEClass.EAllAttributes,
+          refClass.attributeFilter)
           val prefix = refClass.reference + "_"
-          val attributes = refEClass.EAllAttributes.map[attr | attr.name]
-          val refAttributes = prefixAttributes(attributes, prefix)
+          refAttributes = prefixAttributes(refAttributes, prefix)
           dataFileContent.append("," + String.join(",", refAttributes))
-          // then subclasses
+        if (refEClass.isAbstract()) {
+          // Include subclass attributes
           val subClasses = getSubClasses(refEClass)
           for(subClass : subClasses) {
             val sprefix = refClass.reference + "_" + "sub_" + subClass.name + "_"
@@ -161,15 +181,8 @@ class LavoisierGenerator implements IGenerator {
               subClass.EAttributes.map[attr | attr.name], sprefix)
             dataFileContent.append("," + String.join(",", sAttributes))
           }
-          // then type
+          // the type will indicate the subclass of the instance
           dataFileContent.append(",type")
-        } else {
-          var List<String> refAttributes =
-          filterAttributes(refEClass.EAllAttributes,
-          refClass.attributeFilter)
-          val prefix = refClass.reference + "_"
-          refAttributes = prefixAttributes(refAttributes, prefix)
-          dataFileContent.append("," + String.join(",", refAttributes))
         }
       } else {
         // A set of columns is added for each possible value
@@ -189,21 +202,6 @@ class LavoisierGenerator implements IGenerator {
   }
 
 
-  def AttributeFilter prepareAttributeFilter(AttributeFilter filter, EClass eClass,
-        String referredObjectId) {
-    var resFilter = filter
-    if (resFilter == null) {
-      // create it to hold every attribute but the referred id attribute
-      val eFactory = LavoisierFactory.eINSTANCE
-      resFilter = eFactory.createAttributeFilter
-      for (attribute : eClass.EAttributes) {
-        resFilter.attributes.add(attribute.name)
-      }
-    }
-    resFilter.attributes.remove(referredObjectId)
-    return resFilter
-  }
-
   /**
    * Include data of each element into the dataset
    * @param columnNames Indicates the order of appereance of each attribute
@@ -215,7 +213,7 @@ class LavoisierGenerator implements IGenerator {
     val mainEClassElements = domainInstanceResource.allContents.filter[
       element | element.eClass.name.equals(projection.mainClass.name)]
     for (element : mainEClassElements.toIterable) {
-      // attribute values
+      // basic attributes values
       dataFileContent.append(
           String.join(",",
                       filterEAttributes(element.eClass.EAllAttributes,
@@ -227,63 +225,56 @@ class LavoisierGenerator implements IGenerator {
         val reference =
           mainEClass.getEStructuralFeature(refClass.reference) as EReference
         if (reference.upperBound == 1) {
-          if (refEClass.isAbstract) {
-            val attributeValues = new ArrayList<String>()
+          val attributeValues = new ArrayList<String>()
+          val refObject = element.eGet(reference)
+          if (refObject != null) {
             val objectClass = refEClass.instanceClass
-            val refObject = element.eGet(reference)
-            var type = refEClass.name
-            // first, mainclass and superclasses attributes
-            for (attribute : refEClass.EAllAttributes) {
+            val filteredEAttributes = filterEAttributes(refEClass.EAllAttributes,
+                                        refClass.attributeFilter)
+            for (attribute : filteredEAttributes) {
+              // attribute value obtention through emf interface getter method
+              //   reflection required
               val Method method = objectClass.getDeclaredMethod(
-                    "get" + attribute.name.toFirstUpper)
-                val value = method.invoke(refObject)
-                attributeValues.add(value.toString)
+                  "get" + attribute.name.toFirstUpper)
+              val value = method.invoke(refObject)
+              attributeValues.add(value.toString)
             }
-            // we probably won't have a value for each subclasses
-            // Add attribute values. When not value available, blank field
-            for (subClass : getSubClasses(refEClass)) {
-              if (subClass.isInstance(refObject)) {
-                for (attribute : subClass.EAttributes) {
-                  val Method method = subClass.instanceClass.getDeclaredMethod(
-                      "get" + attribute.name.toFirstUpper)
-                  val value = method.invoke(refObject)
-                  attributeValues.add(value.toString)
-                }
-                // get the concrete type of the instance
-                type = subClass.name
-              } else {
-                // blank cell
-                for (attribute : subClass.EAttributes) {
-                  attributeValues.add("")
+            if (refEClass.isAbstract) {
+              var type = refEClass.name
+              // we won't have values for each subclass
+              // When not the instance type, add blank fields
+              for (subClass : getSubClasses(refEClass)) {
+                if (subClass.isInstance(refObject)) {
+                  for (attribute : subClass.EAttributes) {
+                    val Method method = subClass.instanceClass.getDeclaredMethod(
+                        "get" + attribute.name.toFirstUpper)
+                    val value = method.invoke(refObject)
+                    attributeValues.add(value.toString)
+                  }
+                  // get the concrete type of the instance
+                  type = subClass.name
+                } else {
+                  // blank cell
+                  for (attribute : subClass.EAttributes) {
+                    attributeValues.add("")
+                  }
                 }
               }
+              // Finally, the type attribute
+              attributeValues.add(type)
             }
-            // Finally, the type attribute
-            attributeValues.add(type)
-            dataFileContent.append("," + String.join(",", attributeValues))
           } else {
-            val attributeValues = new ArrayList<String>()
-            val refObject = element.eGet(reference)
-            if (refObject != null) {
-              val objectClass = refEClass.instanceClass
-              val filteredEAttributes = filterEAttributes(refEClass.EAttributes,
-                                          refClass.attributeFilter)
-              for (attribute : filteredEAttributes) {
-                // attribute value obtention through emf interface getter method
-                //   reflection required
-                val Method method = objectClass.getDeclaredMethod(
-                    "get" + attribute.name.toFirstUpper)
-                val value = method.invoke(refObject)
-                attributeValues.add(value.toString)
-              }
-            } else {
-              // add as much missing values as attributes would've been included
-              for (attribute : refEClass.EAttributes) {
+            // add as much missing values as attributes would've been included
+            for (attribute : refEClass.EAllAttributes) {
+              attributeValues.add("")
+            }
+            for (subClass : getSubClasses(refEClass)) {
+              for (attribute : subClass.EAttributes) {
                 attributeValues.add("")
               }
             }
-            dataFileContent.append("," + String.join(",", attributeValues))
           }
+          dataFileContent.append("," + String.join(",", attributeValues))
         } else {
           // this only works if no nulls are present (TODO: fix this)
           val objectClass = refEClass.instanceClass
