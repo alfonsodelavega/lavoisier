@@ -11,8 +11,10 @@ import es.unican.lavoisier.lavoisier.ProjectionElements
 import java.lang.reflect.Method
 import java.util.ArrayList
 import java.util.Collections
+import java.util.HashMap
 import java.util.HashSet
 import java.util.List
+import java.util.Map
 import org.eclipse.emf.common.util.EList
 import org.eclipse.emf.ecore.EAttribute
 import org.eclipse.emf.ecore.EClass
@@ -21,6 +23,8 @@ import org.eclipse.emf.ecore.EReference
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.generator.IGenerator
+import org.eclipse.emf.ecore.EObject
+import es.unican.lavoisier.lavoisier.ReferredClass
 
 /**
  * Generates code from your model files on save.
@@ -65,8 +69,8 @@ class LavoisierGenerator implements IGenerator {
   def void createTabularData(Projection projection, IFileSystemAccess fsa) {
     // csv creation
     val dataFileContent = new StringBuilder()
-    includeColumnNames(projection, dataFileContent)
-    includeElementData(projection, dataFileContent)
+    val unbounded2ids = includeColumnNames(projection, dataFileContent)
+    includeElementData(projection, dataFileContent, unbounded2ids)
     // saving the data
     val dataFileName = projection.name + ".csv"
     fsa.generateFile(dataFileName, dataFileContent)
@@ -149,8 +153,10 @@ class LavoisierGenerator implements IGenerator {
   }
 
 
-  def private void includeColumnNames(Projection projection,
+  def private Map<EReference, List<String>> includeColumnNames(Projection projection,
       StringBuilder dataFileContent) {
+    val Map<EReference, List<String>> unboundedRef2ids =
+        new HashMap<EReference, List<String>>()
     val mainEClass =
         domainModel.getEClassifier(projection.mainClass.name) as EClass
     // main class attributes
@@ -189,6 +195,7 @@ class LavoisierGenerator implements IGenerator {
         //   of the attribute which acts as id
         val referredObjectId = refClass.referredObjectId
         val columnPrefixes = obtainColumnPrefixes(refEClass, referredObjectId)
+        unboundedRef2ids.put(reference, columnPrefixes.sort)
         var filter = prepareAttributeFilter(refClass.attributeFilter,
           refEClass, referredObjectId)
         for (prefix : columnPrefixes.sort) {
@@ -199,15 +206,18 @@ class LavoisierGenerator implements IGenerator {
       }
     }
     dataFileContent.append("\n")
+    return unboundedRef2ids
   }
 
 
   /**
    * Include data of each element into the dataset
-   * @param columnNames Indicates the order of appereance of each attribute
+   * @param unboundedRef2ids Indicates the order of appereance of unbounded
+   *                         elements in the header (ordered by id)
    */
   def private void includeElementData(Projection projection,
-                                      StringBuilder dataFileContent) {
+      StringBuilder dataFileContent,
+      Map<EReference, List<String>> unboundedRef2ids) {
     val mainEClass =
         domainModel.getEClassifier(projection.mainClass.name) as EClass
     val mainEClassElements = domainInstanceResource.allContents.filter[
@@ -225,82 +235,117 @@ class LavoisierGenerator implements IGenerator {
         val reference =
           mainEClass.getEStructuralFeature(refClass.reference) as EReference
         if (reference.upperBound == 1) {
-          val attributeValues = new ArrayList<String>()
-          val refObject = element.eGet(reference)
-          if (refObject != null) {
-            val objectClass = refEClass.instanceClass
-            val filteredEAttributes = filterEAttributes(refEClass.EAllAttributes,
-                                        refClass.attributeFilter)
-            for (attribute : filteredEAttributes) {
-              // attribute value obtention through emf interface getter method
-              //   reflection required
-              val Method method = objectClass.getDeclaredMethod(
+          oneBoundedReferenceData(element, refEClass, reference,
+                                  refClass, dataFileContent)
+        } else {
+          multiboundedReferenceData(element, refEClass, reference, refClass,
+                                 dataFileContent, unboundedRef2ids)
+        }
+      }
+    }
+  }
+
+
+  def oneBoundedReferenceData(EObject element, EClass refEClass,
+      EReference reference, ReferredClass refClass,
+      StringBuilder dataFileContent) {
+    val attributeValues = new ArrayList<String>()
+    val refObject = element.eGet(reference)
+    if (refObject != null) {
+      val objectClass = refEClass.instanceClass
+      val filteredEAttributes = filterEAttributes(refEClass.EAllAttributes,
+                                  refClass.attributeFilter)
+      for (attribute : filteredEAttributes) {
+        // attribute value obtention through emf interface getter method
+        //   reflection required
+        val Method method = objectClass.getDeclaredMethod(
+            "get" + attribute.name.toFirstUpper)
+        val value = method.invoke(refObject)
+        attributeValues.add(value.toString)
+      }
+      if (refEClass.isAbstract) {
+        var type = refEClass.name
+        // we won't have values for each subclass
+        // when not the instance type, add blank fields
+        for (subClass : getSubClasses(refEClass)) {
+          if (subClass.isInstance(refObject)) {
+            for (attribute : subClass.EAttributes) {
+              val Method method = subClass.instanceClass.getDeclaredMethod(
                   "get" + attribute.name.toFirstUpper)
               val value = method.invoke(refObject)
               attributeValues.add(value.toString)
             }
-            if (refEClass.isAbstract) {
-              var type = refEClass.name
-              // we won't have values for each subclass
-              // When not the instance type, add blank fields
-              for (subClass : getSubClasses(refEClass)) {
-                if (subClass.isInstance(refObject)) {
-                  for (attribute : subClass.EAttributes) {
-                    val Method method = subClass.instanceClass.getDeclaredMethod(
-                        "get" + attribute.name.toFirstUpper)
-                    val value = method.invoke(refObject)
-                    attributeValues.add(value.toString)
-                  }
-                  // get the concrete type of the instance
-                  type = subClass.name
-                } else {
-                  // blank cell
-                  for (attribute : subClass.EAttributes) {
-                    attributeValues.add("")
-                  }
-                }
-              }
-              // Finally, the type attribute
-              attributeValues.add(type)
-            }
+            // get the concrete type of the instance
+            type = subClass.name
           } else {
-            // add as much missing values as attributes would've been included
-            for (attribute : refEClass.EAllAttributes) {
+            // blank cells
+            for (attribute : subClass.EAttributes) {
               attributeValues.add("")
             }
-            for (subClass : getSubClasses(refEClass)) {
-              for (attribute : subClass.EAttributes) {
-                attributeValues.add("")
-              }
-            }
           }
-          dataFileContent.append("," + String.join(",", attributeValues))
-        } else {
-          // this only works if no nulls are present (TODO: fix this)
-          val objectClass = refEClass.instanceClass
-          val referredObjectId = refClass.referredObjectId
-          val Method referredObjectIdMethod = objectClass.getDeclaredMethod(
-                  "get" + referredObjectId.toFirstUpper)
-          var refList = element.eGet(reference) as List<Object>
-          refList.sortInplaceBy[refEl |
-                                referredObjectIdMethod.invoke(refEl) as String]
-          var filter = prepareAttributeFilter(refClass.attributeFilter,
-              refEClass, referredObjectId)
-          for (refElement : refList) {
-            val attributeValues = new ArrayList<String>()
-            for (attributeName : filter.attributes) {
-              // attribute value obtention through emf interface getter method
-              //   reflection required
-              val Method method = objectClass.getDeclaredMethod(
-                  "get" + attributeName.toFirstUpper)
-              val value = method.invoke(refElement)
-              attributeValues.add(value.toString)
-            }
-            dataFileContent.append("," + String.join(",", attributeValues))
-           }
+        }
+        // Finally, the type attribute
+        attributeValues.add(type)
+      }
+    } else {
+      // add as much missing values as attributes would've been included
+      for (attribute : refEClass.EAllAttributes) {
+        attributeValues.add("")
+      }
+      for (subClass : getSubClasses(refEClass)) {
+        for (attribute : subClass.EAttributes) {
+          attributeValues.add("")
         }
       }
-      dataFileContent.append("\n")
     }
+    dataFileContent.append("," + String.join(",", attributeValues) + "\n")
+  }
+
+
+  def multiboundedReferenceData(EObject element, EClass refEClass,
+      EReference reference, ReferredClass refClass,
+      StringBuilder dataFileContent,
+      Map<EReference, List<String>> unboundedRef2ids) {
+    // unbounded reference: include attributes with provided header order
+    val objectClass = refEClass.instanceClass
+    val referredObjectId = refClass.referredObjectId
+    val Method referredObjectIdMethod = objectClass.getDeclaredMethod(
+            "get" + referredObjectId.toFirstUpper)
+    var refList = element.eGet(reference) as List<Object>
+    refList.sortInplaceBy[refEl |
+                          referredObjectIdMethod.invoke(refEl) as String]
+    var filter = prepareAttributeFilter(refClass.attributeFilter,
+        refEClass, referredObjectId)
+    val orderedIdsIterator = unboundedRef2ids.get(reference).listIterator
+    for (refElement : refList) {
+      val attributeValues = new ArrayList<String>()
+      val refId = referredObjectIdMethod.invoke(refElement) as String
+      while (orderedIdsIterator.hasNext &&
+             !refId.equals(orderedIdsIterator.next)) {
+        // add blank columns until correct element is reached
+        for (attributeName : filter.attributes) {
+          attributeValues.add("")
+        }
+      }
+      for (attributeName : filter.attributes) {
+        // attribute value obtention through emf interface getter method
+        //   reflection required
+        val Method method = objectClass.getDeclaredMethod(
+            "get" + attributeName.toFirstUpper)
+        val value = method.invoke(refElement)
+        attributeValues.add(value.toString)
+      }
+      dataFileContent.append("," + String.join(",", attributeValues))
+    }
+    // there could be still elements in the iterator  (last ids that were
+    //   not present in the current reference). Add blanks for them
+    val attributeValues = new ArrayList<String>()
+    while (orderedIdsIterator.hasNext) {
+      for (attributeName : filter.attributes) {
+         attributeValues.add("")
+      }
+      orderedIdsIterator.next
+    }
+    dataFileContent.append("," + String.join(",", attributeValues) + "\n")
   }
 }
