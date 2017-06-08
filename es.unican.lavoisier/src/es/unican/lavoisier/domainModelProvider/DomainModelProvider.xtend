@@ -40,7 +40,8 @@ class DomainModelProvider {
                                String domainModelNSURI,
                                String domainModelInstance) {
     if (!domainReferenceChanges(domainModelNSURI, domainModelInstance)) {
-      return // no changes in model references
+      // disabled for testing purposes
+      //  return // no changes in model references
     }
     DOMAIN_MODEL_NSURI = domainModelNSURI;
     DOMAIN_MODEL_INSTANCE_FILE = domainModelInstance;
