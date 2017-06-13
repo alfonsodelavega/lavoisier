@@ -43,6 +43,7 @@ class LavoisierGenerator implements IGenerator {
     DomainModelProvider.init()
   }
 
+
   override void doGenerate(Resource resource, IFileSystemAccess fsa) {
     val projections = resource.getContents().get(0) as ProjectionElements
     // Reload domain metamodel and model if changes are present
@@ -66,6 +67,7 @@ class LavoisierGenerator implements IGenerator {
     }
   }
 
+
   def void createTabularData(Projection projection, IFileSystemAccess fsa) {
     // csv creation
     val dataFileContent = new StringBuilder()
@@ -76,7 +78,17 @@ class LavoisierGenerator implements IGenerator {
     fsa.generateFile(dataFileName, dataFileContent)
   }
 
-  def HashSet<String> obtainColumnPrefixes(EClass eClass,
+
+  def String referencePrefix(ReferredClass refClass) {
+    var prefix = refClass.reference + "_"
+    for (level : refClass.multilevelRefs) {
+      prefix += level + "_"
+    }
+    return prefix
+  }
+
+
+  def HashSet<String> multiboundedColumnPrefixes(EClass eClass,
       String referredObjectId) {
     val referredEAttribute =
           eClass.getEStructuralFeature(referredObjectId) as EAttribute
@@ -91,6 +103,11 @@ class LavoisierGenerator implements IGenerator {
       columnPrefixes.add(prefix as String)
     }
     return columnPrefixes
+  }
+
+
+  def prefixAttributes(List<String> attributes, String prefix) {
+    return attributes.map[attr | prefix + attr]
   }
 
 
@@ -119,10 +136,6 @@ class LavoisierGenerator implements IGenerator {
     return filteredEAttributes
   }
 
-
-  def prefixAttributes(List<String> attributes, String prefix) {
-    return attributes.map[attr | prefix + attr]
-  }
 
   def List<EClass> getSubClasses(EClass superClass) {
     val subClasses = new ArrayList<EClass>
@@ -175,14 +188,14 @@ class LavoisierGenerator implements IGenerator {
         var List<String> refAttributes =
           filterAttributes(refEClass.EAllAttributes,
           refClass.attributeFilter)
-          val prefix = refClass.reference + "_"
+          val prefix = referencePrefix(refClass)
           refAttributes = prefixAttributes(refAttributes, prefix)
           dataFileContent.append("," + String.join(",", refAttributes))
         if (refEClass.isAbstract()) {
           // Include subclass attributes
           val subClasses = getSubClasses(refEClass)
           for(subClass : subClasses) {
-            val sprefix = refClass.reference + "_" + "sub_" + subClass.name + "_"
+            val sprefix = referencePrefix(refClass) + "sub_" + subClass.name + "_"
             val sAttributes = prefixAttributes(
               subClass.EAttributes.map[attr | attr.name], sprefix)
             dataFileContent.append("," + String.join(",", sAttributes))
@@ -194,7 +207,8 @@ class LavoisierGenerator implements IGenerator {
         // A set of columns is added for each possible value
         //   of the attribute which acts as id
         val referredObjectId = refClass.referredObjectId
-        val columnPrefixes = obtainColumnPrefixes(refEClass, referredObjectId)
+        val columnPrefixes = multiboundedColumnPrefixes(refEClass,
+                                                        referredObjectId)
         unboundedRef2ids.put(reference, columnPrefixes.sort)
         var filter = prepareAttributeFilter(refClass.attributeFilter,
           refEClass, referredObjectId)
@@ -242,6 +256,7 @@ class LavoisierGenerator implements IGenerator {
                                  dataFileContent, unboundedRef2ids)
         }
       }
+      dataFileContent.append("\n")
     }
   }
 
@@ -250,7 +265,16 @@ class LavoisierGenerator implements IGenerator {
       EReference reference, ReferredClass refClass,
       StringBuilder dataFileContent) {
     val attributeValues = new ArrayList<String>()
-    val refObject = element.eGet(reference)
+    var refObject = element.eGet(reference)
+    // advance multilevel references
+    var i = 0
+    while (refObject != null && i < refClass.multilevelRefs.size) {
+      val refName = refClass.multilevelRefs.get(i)
+      val objectClass = refObject.class
+      val method = objectClass.getDeclaredMethod("get" + refName.toFirstUpper)
+      refObject = method.invoke(refObject)
+      i += 1
+    }
     if (refObject != null) {
       val objectClass = refEClass.instanceClass
       val filteredEAttributes = filterEAttributes(refEClass.EAllAttributes,
@@ -292,13 +316,16 @@ class LavoisierGenerator implements IGenerator {
       for (attribute : refEClass.EAllAttributes) {
         attributeValues.add("")
       }
-      for (subClass : getSubClasses(refEClass)) {
-        for (attribute : subClass.EAttributes) {
-          attributeValues.add("")
+      if (refEClass.isAbstract) {
+        for (subClass : getSubClasses(refEClass)) {
+          for (attribute : subClass.EAttributes) {
+            attributeValues.add("")
+          }
         }
+        attributeValues.add("") // for the type attribute
       }
     }
-    dataFileContent.append("," + String.join(",", attributeValues) + "\n")
+    dataFileContent.append("," + String.join(",", attributeValues))
   }
 
 
@@ -346,6 +373,8 @@ class LavoisierGenerator implements IGenerator {
       }
       orderedIdsIterator.next
     }
-    dataFileContent.append("," + String.join(",", attributeValues) + "\n")
+    if (!attributeValues.isEmpty) {
+      dataFileContent.append("," + String.join(",", attributeValues))
+    }
   }
 }

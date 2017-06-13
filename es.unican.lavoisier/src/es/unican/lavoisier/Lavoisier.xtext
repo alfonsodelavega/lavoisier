@@ -17,7 +17,7 @@ MainClass:
   name=ID (attributeFilter=AttributeFilter)?;
 
 ReferredClass:
-  name=ID 'through' reference=ID
+  name=ID 'through' reference=ID ('->' multilevelRefs+=ID)*
     ('identified_by' referredObjectId=ID)?
     (attributeFilter=AttributeFilter)?;
 

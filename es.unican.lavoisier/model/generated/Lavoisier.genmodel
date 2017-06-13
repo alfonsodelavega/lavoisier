@@ -24,6 +24,7 @@
     <genClasses ecoreClass="Lavoisier.ecore#//ReferredClass">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//ReferredClass/name"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//ReferredClass/reference"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//ReferredClass/multilevelRefs"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//ReferredClass/referredObjectId"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//ReferredClass/attributeFilter"/>
     </genClasses>

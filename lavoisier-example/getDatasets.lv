@@ -21,6 +21,13 @@ dataset A_and_B_filtered {
 	refers_to B through b including [y];
 }
 
+// Multilevel references
+dataset A_and_B_and_C {
+	mainClass A;
+	refers_to B through b;
+	refers_to C through b -> c;
+}
+
 // Unbounded reference ds included, identifier required
 dataset A_and_D {
 	mainClass A;
@@ -37,6 +44,7 @@ dataset A_and_E {
 dataset Full_A {
 	mainClass A;
 	refers_to B through b;
+	refers_to C through b -> c;
 	refers_to D through ds identified_by name;
 	refers_to E through e;
 }
