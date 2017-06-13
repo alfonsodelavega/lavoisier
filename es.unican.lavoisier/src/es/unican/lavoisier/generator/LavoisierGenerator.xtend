@@ -8,6 +8,7 @@ import es.unican.lavoisier.lavoisier.AttributeFilter
 import es.unican.lavoisier.lavoisier.LavoisierFactory
 import es.unican.lavoisier.lavoisier.Projection
 import es.unican.lavoisier.lavoisier.ProjectionElements
+import es.unican.lavoisier.lavoisier.ReferredClass
 import java.lang.reflect.Method
 import java.util.ArrayList
 import java.util.Collections
@@ -18,13 +19,12 @@ import java.util.Map
 import org.eclipse.emf.common.util.EList
 import org.eclipse.emf.ecore.EAttribute
 import org.eclipse.emf.ecore.EClass
+import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EPackage
 import org.eclipse.emf.ecore.EReference
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.generator.IGenerator
-import org.eclipse.emf.ecore.EObject
-import es.unican.lavoisier.lavoisier.ReferredClass
 
 /**
  * Generates code from your model files on save.
@@ -280,10 +280,14 @@ class LavoisierGenerator implements IGenerator {
       val filteredEAttributes = filterEAttributes(refEClass.EAllAttributes,
                                   refClass.attributeFilter)
       for (attribute : filteredEAttributes) {
+        var methodPrefix = "get"
+        if (attribute.EAttributeType.name.equals("EBoolean")) {
+          methodPrefix = "is"
+        }
         // attribute value obtention through emf interface getter method
         //   reflection required
         val Method method = objectClass.getDeclaredMethod(
-            "get" + attribute.name.toFirstUpper)
+            methodPrefix + attribute.name.toFirstUpper)
         val value = method.invoke(refObject)
         attributeValues.add(value.toString)
       }
