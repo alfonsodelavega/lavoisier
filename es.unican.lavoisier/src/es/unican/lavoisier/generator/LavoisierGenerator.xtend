@@ -343,7 +343,7 @@ class LavoisierGenerator implements IGenerator {
     val Method referredObjectIdMethod = objectClass.getDeclaredMethod(
             "get" + referredObjectId.toFirstUpper)
     var refList = element.eGet(reference) as List<Object>
-    refList.sortInplaceBy[refEl |
+    refList = refList.sortBy[refEl |
                           referredObjectIdMethod.invoke(refEl) as String]
     var filter = prepareAttributeFilter(refClass.attributeFilter,
         refEClass, referredObjectId)
