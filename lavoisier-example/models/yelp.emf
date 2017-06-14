@@ -1,0 +1,87 @@
+@namespace(uri="http://yelp.domainModels.flandm.unican.es",
+           prefix="yelp")
+
+package yelp;
+
+class Business {
+  attr String b_id="";
+  attr String name="";
+  attr float stars;
+  attr boolean open=false;
+  ref Location[1] location;
+  ref Category[*] categories;
+  ref Review[*]#business reviews;
+  ref Tip[*]#business tips;
+  ref Feature[*] features;
+}
+
+class Location {
+  attr String neighbourhood="";
+  attr String address="";
+  attr String city="";
+  attr String state="";
+  attr String postalCode="";
+  attr double latitude;
+  attr double longitude;
+}
+
+class Category {
+  attr String name="";
+}
+
+abstract class Feature {
+  attr String name="";
+}
+
+class AvailableFeature extends Feature{
+  attr boolean available=false;
+}
+
+class ValuedFeature extends Feature {
+  attr String value="";
+}
+
+class Group {
+  attr String name="";
+}
+
+class FeatureGroup extends AvailableFeature {
+  ref Group[1] group;
+}
+
+class User {
+  attr String u_id="";
+  attr String name="";
+  attr Date registrationDate;
+  ref Review[*]#user reviews;
+  ref User[*] friends;
+  ref User[*] fans;
+  ref Vote[*]#user votes;
+  ref Tip[*]#user tips;
+}
+
+class Tip {
+  attr String text="";
+  attr Date date;
+  ref User[1]#tips user;
+  ref Business[1]#tips business;
+}
+
+class Review {
+  attr String r_id="";
+  attr Date date;
+  attr float stars;
+  attr String text="";
+  ref User[1]#reviews user;
+  ref Business[1]#reviews business;
+  ref Vote[*]#review votes;
+}
+
+abstract class Vote {
+  ref User[1]#votes user;
+  ref Review[1]#votes review;
+}
+
+class UsefulVote extends Vote {}
+class FunnyVote extends Vote {}
+class CoolVote extends Vote {}

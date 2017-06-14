@@ -1,0 +1,29 @@
+domainModelNSURI "http://yelp.domainModels.flandm.unican.es"
+domainModelInstance "/lavoisier-example/models/yelp.model"
+
+dataset y01_just_business {
+	mainClass Business;
+}
+
+dataset y02_just_reviews {
+	mainClass Review;
+}
+
+dataset y03_just_users {
+	mainClass User;
+}
+
+dataset y04_just_tips {
+	mainClass Tip;
+}
+
+dataset y05_business_and_location {
+	mainClass Business;
+	refers_to Location through location;
+}
+
+dataset y06_tip_and_business_and_user {
+	mainClass Tip;
+	refers_to Business through business;
+	refers_to User through user;
+}

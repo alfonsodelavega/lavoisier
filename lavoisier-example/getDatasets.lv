@@ -5,43 +5,43 @@ domainModelInstance "/lavoisier-example/models/dummy.model"
 // Ecore and png image are present in the "models" folder
 
 // All the info from class A
-dataset just_A {
+dataset d01_justA {
 	mainClass A;
 }
 
 // Including one-bounded feature B
-dataset A_and_B {
+dataset d02_A_and_B {
 	mainClass A;
 	refers_to B through b;
 }
 
 // It is possible to perform filtering on each class
-dataset A_and_B_filtered {
+dataset d03_A_and_B_filtered {
 	mainClass A including [x];
 	refers_to B through b including [y];
 }
 
 // Multilevel references
-dataset A_and_B_and_C {
+dataset d04_A_and_B_and_C {
 	mainClass A;
 	refers_to B through b;
 	refers_to C through b -> c;
 }
 
 // Unbounded reference ds included, identifier required
-dataset A_and_D {
+dataset d05_A_and_D {
 	mainClass A;
 	refers_to D through ds identified_by name including [m];
 }
 
 // Inheritance reduction
-dataset A_and_E {
+dataset d06_A_and_E {
 	mainClass A;
 	refers_to E through e;
 }
 
 // All references from A
-dataset Full_A {
+dataset d07_full_A {
 	mainClass A;
 	refers_to B through b;
 	refers_to C through b -> c;
