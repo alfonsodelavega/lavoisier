@@ -13,6 +13,7 @@ import org.eclipse.xtext.RuleCall
 import org.eclipse.xtext.ui.editor.contentassist.ContentAssistContext
 import org.eclipse.xtext.ui.editor.contentassist.ICompletionProposalAcceptor
 import es.unican.lavoisier.domainModelProvider.IDomainModelUser
+import es.unican.lavoisier.lavoisier.ReferredClass
 
 /**
  * See https://www.eclipse.org/Xtext/documentation/304_ide_concepts.html#content-assist
@@ -68,6 +69,22 @@ class LavoisierProposalProvider extends AbstractLavoisierProposalProvider
     }
   }
 
-
-
+  override public void completeReferredClass_Reference(EObject model,
+      Assignment assignment, ContentAssistContext context,
+      ICompletionProposalAcceptor acceptor) {
+    if (domainModel == null) {
+      return
+    }
+    val referredClass = model as ReferredClass
+    if (referredClass != null) {
+      val refEClass = domainModel.getEClassifier(referredClass.name) as EClass
+      val mainClass = (referredClass.eContainer as Projection).mainClass
+      val mainEClass = domainModel.getEClassifier(mainClass.name) as EClass
+      for (reference : mainEClass.EReferences) {
+        if (reference.EReferenceType.equals(refEClass)) {
+          acceptor.accept(createCompletionProposal(reference.name, context))
+        }
+      }
+    }
+  }
 }
