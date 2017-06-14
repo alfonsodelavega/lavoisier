@@ -14,4 +14,12 @@
             genModel="models/dummy.genmodel"/>
    </extension>
 
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated yelp -->
+      <package
+            uri="http://yelp.domainModels.flandm.unican.es"
+            class="yelp.YelpPackage"
+            genModel="models/yelp.genmodel"/>
+   </extension>
+
 </plugin>
