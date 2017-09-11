@@ -27,3 +27,9 @@ dataset y06_tip_and_business_and_user {
 	refers_to Business through business;
 	refers_to User through user;
 }
+
+dataset y07_review_plus_business_and_user {
+	mainClass Review;
+	refers_to User through user;
+	refers_to Business through business;
+}
