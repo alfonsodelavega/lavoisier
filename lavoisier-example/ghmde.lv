@@ -1,0 +1,17 @@
+domainModelNSURI "ghmde"
+domainModelInstance "/lavoisier-example/models/ghmde.model"
+
+dataset gh01_just_developers {
+	mainClass Developer;
+}
+
+dataset gh02_file_and_repo {
+	mainClass File;
+	refers_to Repository through repository;
+}
+
+dataset gh03_file_repo_and_owner {
+	mainClass File;
+	refers_to Repository through repository;
+	refers_to User through repository->owner;
+}
