@@ -288,8 +288,13 @@ class LavoisierGenerator implements IGenerator {
         //   reflection required
         val Method method = objectClass.getDeclaredMethod(
             methodPrefix + attribute.name.toFirstUpper)
-        val value = method.invoke(refObject)
-        attributeValues.add(value.toString)
+        var value = method.invoke(refObject)
+        if (value == null) {
+          value = ""
+        } else {
+          value = value.toString
+        }
+        attributeValues.add(value as String)
       }
       if (refEClass.isAbstract) {
         var type = refEClass.name
