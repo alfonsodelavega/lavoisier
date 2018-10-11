@@ -2,35 +2,72 @@
 <ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="lavoisier" nsURI="http://www.unican.es/lavoisier/Lavoisier"
     nsPrefix="lavoisier">
-  <eClassifiers xsi:type="ecore:EClass" name="ProjectionElements">
+  <eClassifiers xsi:type="ecore:EClass" name="Datasets">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="domainModelNSURI" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="domainModelInstance" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="projections" upperBound="-1"
-        eType="#//Projection" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="datasets" upperBound="-1"
+        eType="#//Dataset" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Projection">
+  <eClassifiers xsi:type="ecore:EClass" name="Dataset">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="mainClass" eType="#//MainClass"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="referredClasses" upperBound="-1"
-        eType="#//ReferredClass" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="includedReferences" upperBound="-1"
+        eType="#//IncludedReference" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="MainClass">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="attributeFilter" eType="#//AttributeFilter"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instancesFilter" eType="#//InstancesFilter"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="typeFilter" eType="#//TypeFilter"
+        containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ReferredClass">
+  <eClassifiers xsi:type="ecore:EClass" name="IncludedReference">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="reference" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="multilevelRefs" unique="false"
-        upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="referredObjectId" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="referenceId" eType="#//Path"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instancesFilter" eType="#//InstancesFilter"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SimpleReference" eSuperTypes="#//IncludedReference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="attributeFilter" eType="#//AttributeFilter"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="typeFilter" eType="#//TypeFilter"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="includedReferences" upperBound="-1"
+        eType="#//IncludedReference" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AggregatedReference" eSuperTypes="#//IncludedReference">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="function" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="path" eType="#//Path" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TypeFilter">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="typeCustomizations" upperBound="-1"
+        eType="#//TypeCustomization" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TypeCompletion" eSuperTypes="#//TypeFilter"/>
+  <eClassifiers xsi:type="ecore:EClass" name="TypeSelection" eSuperTypes="#//TypeFilter"/>
+  <eClassifiers xsi:type="ecore:EClass" name="TypeCustomization">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="attributeFilter" eType="#//AttributeFilter"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instancesFilter" eType="#//InstancesFilter"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="includedReferences" upperBound="-1"
+        eType="#//IncludedReference" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AttributeFilter">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="attributes" unique="false"
         upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InstancesFilter">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Path">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="jumps" unique="false" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
 </ecore:EPackage>

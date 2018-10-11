@@ -4,24 +4,9 @@
 package es.unican.lavoisier.generator
 
 import es.unican.lavoisier.domainModelProvider.DomainModelProvider
-import es.unican.lavoisier.lavoisier.AttributeFilter
-import es.unican.lavoisier.lavoisier.LavoisierFactory
-import es.unican.lavoisier.lavoisier.Projection
-import es.unican.lavoisier.lavoisier.ProjectionElements
-import es.unican.lavoisier.lavoisier.ReferredClass
-import java.lang.reflect.Method
-import java.util.ArrayList
+import es.unican.lavoisier.lavoisier.Dataset
+import es.unican.lavoisier.lavoisier.Datasets
 import java.util.Collections
-import java.util.HashMap
-import java.util.HashSet
-import java.util.List
-import java.util.Map
-import org.eclipse.emf.common.util.EList
-import org.eclipse.emf.ecore.EAttribute
-import org.eclipse.emf.ecore.EClass
-import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.EPackage
-import org.eclipse.emf.ecore.EReference
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.generator.IGenerator
@@ -33,10 +18,10 @@ import org.eclipse.xtext.generator.IGenerator
  */
 class LavoisierGenerator implements IGenerator {
 
-  private EPackage domainModel
-  private Resource domainInstanceResource
+//  private EPackage domainModel
+//  private Resource domainInstanceResource
 
-  private boolean verbose = false;
+  private boolean verbose = true;
 
   new() {
     super()
@@ -45,345 +30,341 @@ class LavoisierGenerator implements IGenerator {
 
 
   override void doGenerate(Resource resource, IFileSystemAccess fsa) {
-    val projections = resource.getContents().get(0) as ProjectionElements
+    val datasets = resource.getContents().get(0) as Datasets
     // Reload domain metamodel and model if changes are present
-    DomainModelProvider::loadDomainModelResources(resource.resourceSet,
-                             projections.domainModelNSURI,
-                             projections.domainModelInstance);
-    domainModel = DomainModelProvider::domainModel
-    domainInstanceResource = DomainModelProvider::domainInstanceResource
+//    DomainModelProvider::loadDomainModelResources(resource.resourceSet,
+//                             datasets.domainModelNSURI,
+//                             datasets.domainModelInstance);
+//    domainModel = DomainModelProvider::domainModel
+//    domainInstanceResource = DomainModelProvider::domainInstanceResource
     // Projections model file (debugging and verbose purposes)
     if (verbose) {
       val fileUri = resource.URI;
       val modelName = fileUri.trimFileExtension().lastSegment();
       val modelUri= fileUri.trimSegments(1).appendSegment(modelName + ".model");
       val modelResource = resource.getResourceSet().createResource(modelUri);
-      modelResource.getContents().add(projections);
+      modelResource.getContents().add(datasets);
       modelResource.save(Collections.EMPTY_MAP);
     }
     // Generating a csv file for each dataset/projection declared
-    for (projection: projections.projections) {
-      createTabularData(projection, fsa)
+    for (dataset: datasets.datasets) {
+      createTabularData(dataset, fsa)
     }
   }
 
 
-  def void createTabularData(Projection projection, IFileSystemAccess fsa) {
-    // csv creation
-    val dataFileContent = new StringBuilder()
-    val unbounded2ids = includeColumnNames(projection, dataFileContent)
-    includeElementData(projection, dataFileContent, unbounded2ids)
-    // saving the data
-    val dataFileName = projection.name + ".csv"
-    fsa.generateFile(dataFileName, dataFileContent)
+  def void createTabularData(Dataset dataset, IFileSystemAccess fsa) {
+    println(dataset.name)
+    println(String.format("\tmainClass: %s\n", dataset.mainClass.name))
   }
 
-
-  def String referencePrefix(ReferredClass refClass) {
-    var prefix = refClass.reference + "_"
-    for (level : refClass.multilevelRefs) {
-      prefix += level + "_"
-    }
-    return prefix
-  }
-
-
-  def HashSet<String> multiboundedColumnPrefixes(EClass eClass,
-      String referredObjectId) {
-    val referredEAttribute =
-          eClass.getEStructuralFeature(referredObjectId) as EAttribute
-    // we need every different value of this attribute to make
-    //   columns out of them
-    val refEClassElements = domainInstanceResource.allContents.filter[
-      element | element.eClass.name.equals(eClass.name)]
-    // set to store different values (each one will become a column)
-    val columnPrefixes = new HashSet<String>()
-    for (element : refEClassElements.toIterable) {
-      val prefix = element.eGet(referredEAttribute)
-      columnPrefixes.add(prefix as String)
-    }
-    return columnPrefixes
-  }
-
-
-  def prefixAttributes(List<String> attributes, String prefix) {
-    return attributes.map[attr | prefix + attr]
-  }
-
-
-  def List<String> filterAttributes(EList<EAttribute> attributes,
-                                    AttributeFilter filter) {
-    var List<String> filteredAttributes = null
-    if (filter != null) {
-      filteredAttributes = filter.attributes
-    } else {
-      filteredAttributes =
-          attributes.map[attr | attr.name]
-    }
-    return filteredAttributes
-  }
-
-
-  def List<EAttribute> filterEAttributes(EList<EAttribute> attributes,
-                                         AttributeFilter filter) {
-    var List<EAttribute> filteredEAttributes = null
-    if (filter == null) {
-      filteredEAttributes = attributes
-    } else {
-      filteredEAttributes =
-          attributes.filter[attr | filter.attributes.contains(attr.name)].toList
-    }
-    return filteredEAttributes
-  }
-
-
-  def List<EClass> getSubClasses(EClass superClass) {
-    val subClasses = new ArrayList<EClass>
-    for (element : domainModel.EClassifiers) {
-      if (element instanceof EClass &&
-          !element.equals(superClass) &&
-          superClass.isSuperTypeOf(element as EClass)) {
-        subClasses.add(element as EClass)
-      }
-    }
-    return subClasses
-  }
-
-
-  def AttributeFilter prepareAttributeFilter(AttributeFilter filter, EClass eClass,
-        String referredObjectId) {
-    var resFilter = filter
-    if (resFilter == null) {
-      // create it to hold every attribute but the referred id attribute
-      val eFactory = LavoisierFactory.eINSTANCE
-      resFilter = eFactory.createAttributeFilter
-      for (attribute : eClass.EAttributes) {
-        resFilter.attributes.add(attribute.name)
-      }
-    }
-    resFilter.attributes.remove(referredObjectId)
-    return resFilter
-  }
-
-
-  def private Map<EReference, List<String>> includeColumnNames(Projection projection,
-      StringBuilder dataFileContent) {
-    val Map<EReference, List<String>> unboundedRef2ids =
-        new HashMap<EReference, List<String>>()
-    val mainEClass =
-        domainModel.getEClassifier(projection.mainClass.name) as EClass
-    // main class attributes
-    val filteredAttributes =
-        filterAttributes(mainEClass.EAllAttributes,
-                         projection.mainClass.attributeFilter)
-
-    dataFileContent.append(String.join(",", filteredAttributes))
-    // reference features names
-    for (refClass : projection.referredClasses) {
-      val refEClass = domainModel.getEClassifier(refClass.name) as EClass
-      val reference =
-        mainEClass.getEStructuralFeature(refClass.reference) as EReference
-      if (reference.upperBound == 1) {
-        // reference class and superclasses attributes
-        var List<String> refAttributes =
-          filterAttributes(refEClass.EAllAttributes,
-          refClass.attributeFilter)
-          val prefix = referencePrefix(refClass)
-          refAttributes = prefixAttributes(refAttributes, prefix)
-          dataFileContent.append("," + String.join(",", refAttributes))
-        if (refEClass.isAbstract()) {
-          // Include subclass attributes
-          val subClasses = getSubClasses(refEClass)
-          for(subClass : subClasses) {
-            val sprefix = referencePrefix(refClass) + "sub_" + subClass.name + "_"
-            val sAttributes = prefixAttributes(
-              subClass.EAttributes.map[attr | attr.name], sprefix)
-            dataFileContent.append("," + String.join(",", sAttributes))
-          }
-          // the type will indicate the subclass of the instance
-          dataFileContent.append(",type")
-        }
-      } else {
-        // A set of columns is added for each possible value
-        //   of the attribute which acts as id
-        val referredObjectId = refClass.referredObjectId
-        val columnPrefixes = multiboundedColumnPrefixes(refEClass,
-                                                        referredObjectId)
-        unboundedRef2ids.put(reference, columnPrefixes.sort)
-        var filter = prepareAttributeFilter(refClass.attributeFilter,
-          refEClass, referredObjectId)
-        for (prefix : columnPrefixes.sort) {
-          val refAttributes = prefixAttributes(filter.attributes,
-                                               prefix + "_")
-          dataFileContent.append("," + String.join(",", refAttributes))
-        }
-      }
-    }
-    dataFileContent.append("\n")
-    return unboundedRef2ids
-  }
-
-
-  /**
-   * Include data of each element into the dataset
-   * @param unboundedRef2ids Indicates the order of appereance of unbounded
-   *                         elements in the header (ordered by id)
-   */
-  def private void includeElementData(Projection projection,
-      StringBuilder dataFileContent,
-      Map<EReference, List<String>> unboundedRef2ids) {
-    val mainEClass =
-        domainModel.getEClassifier(projection.mainClass.name) as EClass
-    val mainEClassElements = domainInstanceResource.allContents.filter[
-      element | element.eClass.name.equals(projection.mainClass.name)]
-    for (element : mainEClassElements.toIterable) {
-      // basic attributes values
-      dataFileContent.append(
-          String.join(",",
-                      filterEAttributes(element.eClass.EAllAttributes,
-                                        projection.mainClass.attributeFilter)
-                      .map(attr | element.eGet(attr).toString)))
-      // referred features values
-      for (refClass : projection.referredClasses) {
-        val refEClass = domainModel.getEClassifier(refClass.name) as EClass
-        val reference =
-          mainEClass.getEStructuralFeature(refClass.reference) as EReference
-        if (reference.upperBound == 1) {
-          oneBoundedReferenceData(element, refEClass, reference,
-                                  refClass, dataFileContent)
-        } else {
-          multiboundedReferenceData(element, refEClass, reference, refClass,
-                                 dataFileContent, unboundedRef2ids)
-        }
-      }
-      dataFileContent.append("\n")
-    }
-  }
-
-
-  def oneBoundedReferenceData(EObject element, EClass refEClass,
-      EReference reference, ReferredClass refClass,
-      StringBuilder dataFileContent) {
-    val attributeValues = new ArrayList<String>()
-    var refObject = element.eGet(reference)
-    // advance multilevel references
-    var i = 0
-    while (refObject != null && i < refClass.multilevelRefs.size) {
-      val refName = refClass.multilevelRefs.get(i)
-      val objectClass = refObject.class
-      val method = objectClass.getDeclaredMethod("get" + refName.toFirstUpper)
-      refObject = method.invoke(refObject)
-      i += 1
-    }
-    if (refObject != null) {
-      val objectClass = refEClass.instanceClass
-      val filteredEAttributes = filterEAttributes(refEClass.EAllAttributes,
-                                  refClass.attributeFilter)
-      for (attribute : filteredEAttributes) {
-        var methodPrefix = "get"
-        if (attribute.EAttributeType.name.equals("EBoolean")) {
-          methodPrefix = "is"
-        }
-        // attribute value obtention through emf interface getter method
-        //   reflection required
-        val Method method = objectClass.getDeclaredMethod(
-            methodPrefix + attribute.name.toFirstUpper)
-        var value = method.invoke(refObject)
-        if (value == null) {
-          value = ""
-        } else {
-          value = value.toString
-        }
-        attributeValues.add(value as String)
-      }
-      if (refEClass.isAbstract) {
-        var type = refEClass.name
-        // we won't have values for each subclass
-        // when not the instance type, add blank fields
-        for (subClass : getSubClasses(refEClass)) {
-          if (subClass.isInstance(refObject)) {
-            for (attribute : subClass.EAttributes) {
-              val Method method = subClass.instanceClass.getDeclaredMethod(
-                  "get" + attribute.name.toFirstUpper)
-              val value = method.invoke(refObject)
-              attributeValues.add(value.toString)
-            }
-            // get the concrete type of the instance
-            type = subClass.name
-          } else {
-            // blank cells
-            for (attribute : subClass.EAttributes) {
-              attributeValues.add("")
-            }
-          }
-        }
-        // Finally, the type attribute
-        attributeValues.add(type)
-      }
-    } else {
-      // add as much missing values as attributes would've been included
-      for (attribute : refEClass.EAllAttributes) {
-        attributeValues.add("")
-      }
-      if (refEClass.isAbstract) {
-        for (subClass : getSubClasses(refEClass)) {
-          for (attribute : subClass.EAttributes) {
-            attributeValues.add("")
-          }
-        }
-        attributeValues.add("") // for the type attribute
-      }
-    }
-    dataFileContent.append("," + String.join(",", attributeValues))
-  }
-
-
-  def multiboundedReferenceData(EObject element, EClass refEClass,
-      EReference reference, ReferredClass refClass,
-      StringBuilder dataFileContent,
-      Map<EReference, List<String>> unboundedRef2ids) {
-    // unbounded reference: include attributes with provided header order
-    val objectClass = refEClass.instanceClass
-    val referredObjectId = refClass.referredObjectId
-    val Method referredObjectIdMethod = objectClass.getDeclaredMethod(
-            "get" + referredObjectId.toFirstUpper)
-    var refList = element.eGet(reference) as List<Object>
-    refList = refList.sortBy[refEl |
-                          referredObjectIdMethod.invoke(refEl) as String]
-    var filter = prepareAttributeFilter(refClass.attributeFilter,
-        refEClass, referredObjectId)
-    val orderedIdsIterator = unboundedRef2ids.get(reference).listIterator
-    for (refElement : refList) {
-      val attributeValues = new ArrayList<String>()
-      val refId = referredObjectIdMethod.invoke(refElement) as String
-      while (orderedIdsIterator.hasNext &&
-             !refId.equals(orderedIdsIterator.next)) {
-        // add blank columns until correct element is reached
-        for (attributeName : filter.attributes) {
-          attributeValues.add("")
-        }
-      }
-      for (attributeName : filter.attributes) {
-        // attribute value obtention through emf interface getter method
-        //   reflection required
-        val Method method = objectClass.getDeclaredMethod(
-            "get" + attributeName.toFirstUpper)
-        val value = method.invoke(refElement)
-        attributeValues.add(value.toString)
-      }
-      dataFileContent.append("," + String.join(",", attributeValues))
-    }
-    // there could be still elements in the iterator  (last ids that were
-    //   not present in the current reference). Add blanks for them
-    val attributeValues = new ArrayList<String>()
-    while (orderedIdsIterator.hasNext) {
-      for (attributeName : filter.attributes) {
-         attributeValues.add("")
-      }
-      orderedIdsIterator.next
-    }
-    if (!attributeValues.isEmpty) {
-      dataFileContent.append("," + String.join(",", attributeValues))
-    }
-  }
+//
+//
+//  def String referencePrefix(ReferredClass refClass) {
+//    var prefix = refClass.reference + "_"
+//    for (level : refClass.multilevelRefs) {
+//      prefix += level + "_"
+//    }
+//    return prefix
+//  }
+//
+//
+//  def HashSet<String> multiboundedColumnPrefixes(EClass eClass,
+//      String referredObjectId) {
+//    val referredEAttribute =
+//          eClass.getEStructuralFeature(referredObjectId) as EAttribute
+//    // we need every different value of this attribute to make
+//    //   columns out of them
+//    val refEClassElements = domainInstanceResource.allContents.filter[
+//      element | element.eClass.name.equals(eClass.name)]
+//    // set to store different values (each one will become a column)
+//    val columnPrefixes = new HashSet<String>()
+//    for (element : refEClassElements.toIterable) {
+//      val prefix = element.eGet(referredEAttribute)
+//      columnPrefixes.add(prefix as String)
+//    }
+//    return columnPrefixes
+//  }
+//
+//
+//  def prefixAttributes(List<String> attributes, String prefix) {
+//    return attributes.map[attr | prefix + attr]
+//  }
+//
+//
+//  def List<String> filterAttributes(EList<EAttribute> attributes,
+//                                    AttributeFilter filter) {
+//    var List<String> filteredAttributes = null
+//    if (filter != null) {
+//      filteredAttributes = filter.attributes
+//    } else {
+//      filteredAttributes =
+//          attributes.map[attr | attr.name]
+//    }
+//    return filteredAttributes
+//  }
+//
+//
+//  def List<EAttribute> filterEAttributes(EList<EAttribute> attributes,
+//                                         AttributeFilter filter) {
+//    var List<EAttribute> filteredEAttributes = null
+//    if (filter == null) {
+//      filteredEAttributes = attributes
+//    } else {
+//      filteredEAttributes =
+//          attributes.filter[attr | filter.attributes.contains(attr.name)].toList
+//    }
+//    return filteredEAttributes
+//  }
+//
+//
+//  def List<EClass> getSubClasses(EClass superClass) {
+//    val subClasses = new ArrayList<EClass>
+//    for (element : domainModel.EClassifiers) {
+//      if (element instanceof EClass &&
+//          !element.equals(superClass) &&
+//          superClass.isSuperTypeOf(element as EClass)) {
+//        subClasses.add(element as EClass)
+//      }
+//    }
+//    return subClasses
+//  }
+//
+//
+//  def AttributeFilter prepareAttributeFilter(AttributeFilter filter, EClass eClass,
+//        String referredObjectId) {
+//    var resFilter = filter
+//    if (resFilter == null) {
+//      // create it to hold every attribute but the referred id attribute
+//      val eFactory = LavoisierFactory.eINSTANCE
+//      resFilter = eFactory.createAttributeFilter
+//      for (attribute : eClass.EAttributes) {
+//        resFilter.attributes.add(attribute.name)
+//      }
+//    }
+//    resFilter.attributes.remove(referredObjectId)
+//    return resFilter
+//  }
+//
+//
+//  def private Map<EReference, List<String>> includeColumnNames(Projection projection,
+//      StringBuilder dataFileContent) {
+//    val Map<EReference, List<String>> unboundedRef2ids =
+//        new HashMap<EReference, List<String>>()
+//    val mainEClass =
+//        domainModel.getEClassifier(projection.mainClass.name) as EClass
+//    // main class attributes
+//    val filteredAttributes =
+//        filterAttributes(mainEClass.EAllAttributes,
+//                         projection.mainClass.attributeFilter)
+//
+//    dataFileContent.append(String.join(",", filteredAttributes))
+//    // reference features names
+//    for (refClass : projection.referredClasses) {
+//      val refEClass = domainModel.getEClassifier(refClass.name) as EClass
+//      val reference =
+//        mainEClass.getEStructuralFeature(refClass.reference) as EReference
+//      if (reference.upperBound == 1) {
+//        // reference class and superclasses attributes
+//        var List<String> refAttributes =
+//          filterAttributes(refEClass.EAllAttributes,
+//          refClass.attributeFilter)
+//          val prefix = referencePrefix(refClass)
+//          refAttributes = prefixAttributes(refAttributes, prefix)
+//          dataFileContent.append("," + String.join(",", refAttributes))
+//        if (refEClass.isAbstract()) {
+//          // Include subclass attributes
+//          val subClasses = getSubClasses(refEClass)
+//          for(subClass : subClasses) {
+//            val sprefix = referencePrefix(refClass) + "sub_" + subClass.name + "_"
+//            val sAttributes = prefixAttributes(
+//              subClass.EAttributes.map[attr | attr.name], sprefix)
+//            dataFileContent.append("," + String.join(",", sAttributes))
+//          }
+//          // the type will indicate the subclass of the instance
+//          dataFileContent.append(",type")
+//        }
+//      } else {
+//        // A set of columns is added for each possible value
+//        //   of the attribute which acts as id
+//        val referredObjectId = refClass.referredObjectId
+//        val columnPrefixes = multiboundedColumnPrefixes(refEClass,
+//                                                        referredObjectId)
+//        unboundedRef2ids.put(reference, columnPrefixes.sort)
+//        var filter = prepareAttributeFilter(refClass.attributeFilter,
+//          refEClass, referredObjectId)
+//        for (prefix : columnPrefixes.sort) {
+//          val refAttributes = prefixAttributes(filter.attributes,
+//                                               prefix + "_")
+//          dataFileContent.append("," + String.join(",", refAttributes))
+//        }
+//      }
+//    }
+//    dataFileContent.append("\n")
+//    return unboundedRef2ids
+//  }
+//
+//
+//  /**
+//   * Include data of each element into the dataset
+//   * @param unboundedRef2ids Indicates the order of appereance of unbounded
+//   *                         elements in the header (ordered by id)
+//   */
+//  def private void includeElementData(Projection projection,
+//      StringBuilder dataFileContent,
+//      Map<EReference, List<String>> unboundedRef2ids) {
+//    val mainEClass =
+//        domainModel.getEClassifier(projection.mainClass.name) as EClass
+//    val mainEClassElements = domainInstanceResource.allContents.filter[
+//      element | element.eClass.name.equals(projection.mainClass.name)]
+//    for (element : mainEClassElements.toIterable) {
+//      // basic attributes values
+//      dataFileContent.append(
+//          String.join(",",
+//                      filterEAttributes(element.eClass.EAllAttributes,
+//                                        projection.mainClass.attributeFilter)
+//                      .map(attr | element.eGet(attr).toString)))
+//      // referred features values
+//      for (refClass : projection.referredClasses) {
+//        val refEClass = domainModel.getEClassifier(refClass.name) as EClass
+//        val reference =
+//          mainEClass.getEStructuralFeature(refClass.reference) as EReference
+//        if (reference.upperBound == 1) {
+//          oneBoundedReferenceData(element, refEClass, reference,
+//                                  refClass, dataFileContent)
+//        } else {
+//          multiboundedReferenceData(element, refEClass, reference, refClass,
+//                                 dataFileContent, unboundedRef2ids)
+//        }
+//      }
+//      dataFileContent.append("\n")
+//    }
+//  }
+//
+//
+//  def oneBoundedReferenceData(EObject element, EClass refEClass,
+//      EReference reference, ReferredClass refClass,
+//      StringBuilder dataFileContent) {
+//    val attributeValues = new ArrayList<String>()
+//    var refObject = element.eGet(reference)
+//    // advance multilevel references
+//    var i = 0
+//    while (refObject != null && i < refClass.multilevelRefs.size) {
+//      val refName = refClass.multilevelRefs.get(i)
+//      val objectClass = refObject.class
+//      val method = objectClass.getDeclaredMethod("get" + refName.toFirstUpper)
+//      refObject = method.invoke(refObject)
+//      i += 1
+//    }
+//    if (refObject != null) {
+//      val objectClass = refEClass.instanceClass
+//      val filteredEAttributes = filterEAttributes(refEClass.EAllAttributes,
+//                                  refClass.attributeFilter)
+//      for (attribute : filteredEAttributes) {
+//        var methodPrefix = "get"
+//        if (attribute.EAttributeType.name.equals("EBoolean")) {
+//          methodPrefix = "is"
+//        }
+//        // attribute value obtention through emf interface getter method
+//        //   reflection required
+//        val Method method = objectClass.getDeclaredMethod(
+//            methodPrefix + attribute.name.toFirstUpper)
+//        var value = method.invoke(refObject)
+//        if (value == null) {
+//          value = ""
+//        } else {
+//          value = value.toString
+//        }
+//        attributeValues.add(value as String)
+//      }
+//      if (refEClass.isAbstract) {
+//        var type = refEClass.name
+//        // we won't have values for each subclass
+//        // when not the instance type, add blank fields
+//        for (subClass : getSubClasses(refEClass)) {
+//          if (subClass.isInstance(refObject)) {
+//            for (attribute : subClass.EAttributes) {
+//              val Method method = subClass.instanceClass.getDeclaredMethod(
+//                  "get" + attribute.name.toFirstUpper)
+//              val value = method.invoke(refObject)
+//              attributeValues.add(value.toString)
+//            }
+//            // get the concrete type of the instance
+//            type = subClass.name
+//          } else {
+//            // blank cells
+//            for (attribute : subClass.EAttributes) {
+//              attributeValues.add("")
+//            }
+//          }
+//        }
+//        // Finally, the type attribute
+//        attributeValues.add(type)
+//      }
+//    } else {
+//      // add as much missing values as attributes would've been included
+//      for (attribute : refEClass.EAllAttributes) {
+//        attributeValues.add("")
+//      }
+//      if (refEClass.isAbstract) {
+//        for (subClass : getSubClasses(refEClass)) {
+//          for (attribute : subClass.EAttributes) {
+//            attributeValues.add("")
+//          }
+//        }
+//        attributeValues.add("") // for the type attribute
+//      }
+//    }
+//    dataFileContent.append("," + String.join(",", attributeValues))
+//  }
+//
+//
+//  def multiboundedReferenceData(EObject element, EClass refEClass,
+//      EReference reference, ReferredClass refClass,
+//      StringBuilder dataFileContent,
+//      Map<EReference, List<String>> unboundedRef2ids) {
+//    // unbounded reference: include attributes with provided header order
+//    val objectClass = refEClass.instanceClass
+//    val referredObjectId = refClass.referredObjectId
+//    val Method referredObjectIdMethod = objectClass.getDeclaredMethod(
+//            "get" + referredObjectId.toFirstUpper)
+//    var refList = element.eGet(reference) as List<Object>
+//    refList = refList.sortBy[refEl |
+//                          referredObjectIdMethod.invoke(refEl) as String]
+//    var filter = prepareAttributeFilter(refClass.attributeFilter,
+//        refEClass, referredObjectId)
+//    val orderedIdsIterator = unboundedRef2ids.get(reference).listIterator
+//    for (refElement : refList) {
+//      val attributeValues = new ArrayList<String>()
+//      val refId = referredObjectIdMethod.invoke(refElement) as String
+//      while (orderedIdsIterator.hasNext &&
+//             !refId.equals(orderedIdsIterator.next)) {
+//        // add blank columns until correct element is reached
+//        for (attributeName : filter.attributes) {
+//          attributeValues.add("")
+//        }
+//      }
+//      for (attributeName : filter.attributes) {
+//        // attribute value obtention through emf interface getter method
+//        //   reflection required
+//        val Method method = objectClass.getDeclaredMethod(
+//            "get" + attributeName.toFirstUpper)
+//        val value = method.invoke(refElement)
+//        attributeValues.add(value.toString)
+//      }
+//      dataFileContent.append("," + String.join(",", attributeValues))
+//    }
+//    // there could be still elements in the iterator  (last ids that were
+//    //   not present in the current reference). Add blanks for them
+//    val attributeValues = new ArrayList<String>()
+//    while (orderedIdsIterator.hasNext) {
+//      for (attributeName : filter.attributes) {
+//         attributeValues.add("")
+//      }
+//      orderedIdsIterator.next
+//    }
+//    if (!attributeValues.isEmpty) {
+//      dataFileContent.append("," + String.join(",", attributeValues))
+//    }
+//  }
 }

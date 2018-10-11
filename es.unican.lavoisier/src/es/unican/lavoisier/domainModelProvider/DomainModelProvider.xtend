@@ -6,7 +6,6 @@ import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EPackage
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.emf.ecore.resource.ResourceSet
-import dummy.DummyPackage
 
 class DomainModelProvider {
 
@@ -25,8 +24,6 @@ class DomainModelProvider {
   }
 
   def static init() {
-    EPackage.Registry.INSTANCE.put("http://dummy.domainModels.flandm.unican.es",
-                     DummyPackage.eINSTANCE)
   }
 
   private static def domainReferenceChanges(String domainModelNSURI,

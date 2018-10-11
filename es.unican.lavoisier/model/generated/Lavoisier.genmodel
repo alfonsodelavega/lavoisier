@@ -7,29 +7,56 @@
     editorPluginID="es.unican.lavoisier.editor" runtimeVersion="2.12">
   <genPackages prefix="Lavoisier" basePackage="es.unican.lavoisier" disposableProviderFactory="true"
       fileExtensions="lv" ecorePackage="Lavoisier.ecore#/">
-    <genClasses ecoreClass="Lavoisier.ecore#//ProjectionElements">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//ProjectionElements/domainModelNSURI"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//ProjectionElements/domainModelInstance"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//ProjectionElements/projections"/>
+    <genClasses ecoreClass="Lavoisier.ecore#//Datasets">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//Datasets/domainModelNSURI"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//Datasets/domainModelInstance"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//Datasets/datasets"/>
     </genClasses>
-    <genClasses ecoreClass="Lavoisier.ecore#//Projection">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//Projection/name"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//Projection/mainClass"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//Projection/referredClasses"/>
+    <genClasses ecoreClass="Lavoisier.ecore#//Dataset">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//Dataset/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//Dataset/mainClass"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//Dataset/includedReferences"/>
     </genClasses>
     <genClasses ecoreClass="Lavoisier.ecore#//MainClass">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//MainClass/name"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//MainClass/attributeFilter"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//MainClass/instancesFilter"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//MainClass/typeFilter"/>
     </genClasses>
-    <genClasses ecoreClass="Lavoisier.ecore#//ReferredClass">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//ReferredClass/name"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//ReferredClass/reference"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//ReferredClass/multilevelRefs"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//ReferredClass/referredObjectId"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//ReferredClass/attributeFilter"/>
+    <genClasses ecoreClass="Lavoisier.ecore#//IncludedReference">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//IncludedReference/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//IncludedReference/referenceId"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//IncludedReference/instancesFilter"/>
+    </genClasses>
+    <genClasses ecoreClass="Lavoisier.ecore#//SimpleReference">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//SimpleReference/attributeFilter"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//SimpleReference/typeFilter"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//SimpleReference/includedReferences"/>
+    </genClasses>
+    <genClasses ecoreClass="Lavoisier.ecore#//AggregatedReference">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//AggregatedReference/function"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//AggregatedReference/path"/>
+    </genClasses>
+    <genClasses ecoreClass="Lavoisier.ecore#//TypeFilter">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//TypeFilter/typeCustomizations"/>
+    </genClasses>
+    <genClasses ecoreClass="Lavoisier.ecore#//TypeCompletion"/>
+    <genClasses ecoreClass="Lavoisier.ecore#//TypeSelection"/>
+    <genClasses ecoreClass="Lavoisier.ecore#//TypeCustomization">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//TypeCustomization/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//TypeCustomization/attributeFilter"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//TypeCustomization/instancesFilter"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//TypeCustomization/includedReferences"/>
     </genClasses>
     <genClasses ecoreClass="Lavoisier.ecore#//AttributeFilter">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//AttributeFilter/attributes"/>
+    </genClasses>
+    <genClasses ecoreClass="Lavoisier.ecore#//InstancesFilter">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//InstancesFilter/name"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//InstancesFilter/value"/>
+    </genClasses>
+    <genClasses ecoreClass="Lavoisier.ecore#//Path">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//Path/jumps"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

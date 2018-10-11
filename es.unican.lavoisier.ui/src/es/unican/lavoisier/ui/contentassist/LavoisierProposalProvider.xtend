@@ -3,88 +3,76 @@
  */
 package es.unican.lavoisier.ui.contentassist
 
-import es.unican.lavoisier.domainModelProvider.DomainModelProvider
-import es.unican.lavoisier.lavoisier.Projection
-import org.eclipse.emf.ecore.EClass
-import org.eclipse.emf.ecore.EObject
-import org.eclipse.emf.ecore.EPackage
-import org.eclipse.xtext.Assignment
-import org.eclipse.xtext.RuleCall
-import org.eclipse.xtext.ui.editor.contentassist.ContentAssistContext
-import org.eclipse.xtext.ui.editor.contentassist.ICompletionProposalAcceptor
-import es.unican.lavoisier.domainModelProvider.IDomainModelUser
-import es.unican.lavoisier.lavoisier.ReferredClass
-
 /**
  * See https://www.eclipse.org/Xtext/documentation/304_ide_concepts.html#content-assist
  * on how to customize the content assistant.
  */
-class LavoisierProposalProvider extends AbstractLavoisierProposalProvider
-                                implements IDomainModelUser {
+class LavoisierProposalProvider extends AbstractLavoisierProposalProvider {
+//                                implements IDomainModelUser {
 
-  private EPackage domainModel
-
-  override setDomainModel(EPackage domainModel) {
-    this.domainModel = domainModel
-  }
-
-  new() {
-    super()
-    DomainModelProvider::linkDomainModel(this)
-  }
-
-  override public void complete_ID(EObject model, RuleCall ruleCall,
-      ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
-    // IDs suggestions not desired
-  }
-
-  override public void completeMainClass_Name(EObject model, Assignment assignment,
-      ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
-    if (domainModel == null) {
-      return
-    }
-    for (element : domainModel.EClassifiers) {
-      if (element instanceof EClass) {
-        acceptor.accept(createCompletionProposal((element as EClass).name, context))
-      }
-    }
-  }
-
-  override public void completeReferredClass_Name(EObject model, Assignment assignment,
-      ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
-    if (domainModel == null) {
-      return
-    }
-    val projection = model as Projection
-    if (projection != null &&
-        projection.mainClass != null) {
-      val mainEClass =
-          domainModel.getEClassifier(projection.mainClass.name) as EClass
-      if (mainEClass != null) {
-        for (reference : mainEClass.EReferences){
-          val refEClassName = reference.EReferenceType.name
-          acceptor.accept(createCompletionProposal(refEClassName, context))
-        }
-      }
-    }
-  }
-
-  override public void completeReferredClass_Reference(EObject model,
-      Assignment assignment, ContentAssistContext context,
-      ICompletionProposalAcceptor acceptor) {
-    if (domainModel == null) {
-      return
-    }
-    val referredClass = model as ReferredClass
-    if (referredClass != null) {
-      val refEClass = domainModel.getEClassifier(referredClass.name) as EClass
-      val mainClass = (referredClass.eContainer as Projection).mainClass
-      val mainEClass = domainModel.getEClassifier(mainClass.name) as EClass
-      for (reference : mainEClass.EReferences) {
-        if (reference.EReferenceType.equals(refEClass)) {
-          acceptor.accept(createCompletionProposal(reference.name, context))
-        }
-      }
-    }
-  }
+//  private EPackage domainModel
+//
+//  override setDomainModel(EPackage domainModel) {
+//    this.domainModel = domainModel
+//  }
+//
+//  new() {
+//    super()
+//    DomainModelProvider::linkDomainModel(this)
+//  }
+//
+//  override public void complete_ID(EObject model, RuleCall ruleCall,
+//      ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
+//    // IDs suggestions not desired
+//  }
+//
+//  override public void completeMainClass_Name(EObject model, Assignment assignment,
+//      ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
+//    if (domainModel == null) {
+//      return
+//    }
+//    for (element : domainModel.EClassifiers) {
+//      if (element instanceof EClass) {
+//        acceptor.accept(createCompletionProposal((element as EClass).name, context))
+//      }
+//    }
+//  }
+//
+//  override public void completeReferredClass_Name(EObject model, Assignment assignment,
+//      ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
+//    if (domainModel == null) {
+//      return
+//    }
+//    val projection = model as Projection
+//    if (projection != null &&
+//        projection.mainClass != null) {
+//      val mainEClass =
+//          domainModel.getEClassifier(projection.mainClass.name) as EClass
+//      if (mainEClass != null) {
+//        for (reference : mainEClass.EReferences){
+//          val refEClassName = reference.EReferenceType.name
+//          acceptor.accept(createCompletionProposal(refEClassName, context))
+//        }
+//      }
+//    }
+//  }
+//
+//  override public void completeReferredClass_Reference(EObject model,
+//      Assignment assignment, ContentAssistContext context,
+//      ICompletionProposalAcceptor acceptor) {
+//    if (domainModel == null) {
+//      return
+//    }
+//    val referredClass = model as ReferredClass
+//    if (referredClass != null) {
+//      val refEClass = domainModel.getEClassifier(referredClass.name) as EClass
+//      val mainClass = (referredClass.eContainer as Projection).mainClass
+//      val mainEClass = domainModel.getEClassifier(mainClass.name) as EClass
+//      for (reference : mainEClass.EReferences) {
+//        if (reference.EReferenceType.equals(refEClass)) {
+//          acceptor.accept(createCompletionProposal(reference.name, context))
+//        }
+//      }
+//    }
+//  }
 }
