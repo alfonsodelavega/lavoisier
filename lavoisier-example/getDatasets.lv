@@ -2,51 +2,51 @@ domainModelNSURI "http://dummy.domainModels.flandm.unican.es"
 domainModelInstance "/lavoisier-example/models/dummy.model"
 
 // Examples from the "dummy" domain model
-// Ecore and png image are present in the "models" folder
+// Ecore and png image are present in the  "models" folder
 
 // All the info from class A
 dataset d01_justA {
-	mainClass A
+  mainClass A
 }
 
 // Including one-bounded feature B
 dataset d02_A_and_B {
-	mainClass A
-	include b
+  mainClass A
+  include b
 }
 
 // It is possible to perform filtering on each class
 dataset d03_A_and_B_filtered {
-	mainClass A[x]
-	include b[y]
+  mainClass A[x]
+  include b[y]
 }
 
 // Multilevel references
 dataset d04_A_and_B_and_C {
-	mainClass A
-	include b {
-		include c
-	}
+  mainClass A
+  include b {
+    include c
+  }
 }
 
 // Unbounded reference ds included, identifier required
 dataset d05_A_and_D {
-	mainClass A
-	include ds[m] by name
+  mainClass A
+  include ds[m] by name
 }
 
 // Inheritance reduction
 dataset d06_A_and_E {
-	mainClass A
-	include e
+  mainClass A
+  include e
 }
 
 // All references from A
 dataset d07_full_A {
-	mainClass A
-	include b {
-		include c
-	}
-	include ds[m] by name
-	include e
+  mainClass A
+  include b {
+    include c
+  }
+  include ds[m] by name
+  include e
 }
