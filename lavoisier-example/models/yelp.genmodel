@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/lavoisier-example/src" modelPluginID="lavoisier-example"
+    modelName="Yelp" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
+    importerID="org.eclipse.emf.importer.ecore" complianceLevel="8.0" copyrightFields="false"
+    operationReflection="true" importOrganizing="true">
+  <foreignModel>yelp.ecore</foreignModel>
+  <genPackages prefix="Yelp" disposableProviderFactory="true" ecorePackage="yelp.ecore#/">
+    <genClasses ecoreClass="yelp.ecore#//Business">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//Business/b_id"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//Business/name"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//Business/stars"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//Business/open"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference yelp.ecore#//Business/location"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference yelp.ecore#//Business/categories"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference yelp.ecore#//Business/reviews"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference yelp.ecore#//Business/tips"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference yelp.ecore#//Business/features"/>
+    </genClasses>
+    <genClasses ecoreClass="yelp.ecore#//Location">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//Location/neighbourhood"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//Location/address"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//Location/city"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//Location/state"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//Location/postalCode"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//Location/latitude"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//Location/longitude"/>
+    </genClasses>
+    <genClasses ecoreClass="yelp.ecore#//Category">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//Category/name"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="yelp.ecore#//Feature">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//Feature/name"/>
+    </genClasses>
+    <genClasses ecoreClass="yelp.ecore#//AvailableFeature">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//AvailableFeature/available"/>
+    </genClasses>
+    <genClasses ecoreClass="yelp.ecore#//ValuedFeature">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//ValuedFeature/value"/>
+    </genClasses>
+    <genClasses ecoreClass="yelp.ecore#//Group">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//Group/name"/>
+    </genClasses>
+    <genClasses ecoreClass="yelp.ecore#//FeatureGroup">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference yelp.ecore#//FeatureGroup/group"/>
+    </genClasses>
+    <genClasses ecoreClass="yelp.ecore#//User">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//User/u_id"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//User/name"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//User/registrationDate"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference yelp.ecore#//User/reviews"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference yelp.ecore#//User/friends"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference yelp.ecore#//User/fans"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference yelp.ecore#//User/votes"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference yelp.ecore#//User/tips"/>
+    </genClasses>
+    <genClasses ecoreClass="yelp.ecore#//Tip">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//Tip/text"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//Tip/date"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference yelp.ecore#//Tip/user"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference yelp.ecore#//Tip/business"/>
+    </genClasses>
+    <genClasses ecoreClass="yelp.ecore#//Review">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//Review/r_id"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//Review/date"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//Review/stars"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute yelp.ecore#//Review/text"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference yelp.ecore#//Review/user"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference yelp.ecore#//Review/business"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference yelp.ecore#//Review/votes"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="yelp.ecore#//Vote">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference yelp.ecore#//Vote/user"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference yelp.ecore#//Vote/review"/>
+    </genClasses>
+    <genClasses ecoreClass="yelp.ecore#//UsefulVote"/>
+    <genClasses ecoreClass="yelp.ecore#//FunnyVote"/>
+    <genClasses ecoreClass="yelp.ecore#//CoolVote"/>
+  </genPackages>
+</genmodel:GenModel>

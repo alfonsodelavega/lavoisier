@@ -2,17 +2,17 @@ domainModelNSURI "ghmde"
 domainModelInstance "/lavoisier-example/models/ghmde.model"
 
 dataset gh01_just_developers {
-	mainClass Developer
+  mainClass Developer
 }
 
 dataset gh02_file_and_repo {
-	mainClass File
-	include repository
+  mainClass File
+  include repository
 }
 
 dataset gh03_file_repo_and_owner {
-	mainClass File
-	include repository {
-		include owner
-	}
+  mainClass File
+  include repository {
+    include owner
+  }
 }

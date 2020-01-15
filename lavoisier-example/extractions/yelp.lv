@@ -1,0 +1,58 @@
+domainModelNSURI "http://yelp.domainModels.flandm.unican.es"
+domainModelInstance "/lavoisier-example/models/yelp.model"
+
+// reviews from Edinburgh businesses
+dataset yelp_reviews {
+  mainClass Review
+    where business.location.city = "Edinburgh"
+  include user
+  include business {
+    include location[address, postalCode]
+    include features by name {
+      as GroupedFeature {
+        include group
+      }
+    }
+    calculate numPositiveReviews
+      as count(business.reviews) where stars >= 4
+  }
+}
+
+// b1: Single-bounded reference
+dataset reviews {
+    mainClass Review
+    include user
+}
+
+// c1: Unbounded reference
+dataset businessAndCat {
+    mainClass Business
+    include categories by name
+}
+
+// d1-d3: Inheritance
+dataset features {
+    mainClass Feature {
+        as GroupedFeature {
+            include group
+        }
+    }
+}
+
+// d4-d6: Unbounded Inheritance
+dataset businessAndFeat {
+    mainClass Business
+    include features by name {
+        as GroupedFeature {
+            include group
+        }
+    }
+}
+
+// e2: Combination (multilevel)
+dataset revsBusnsCats {
+    mainClass Review
+    include business {
+        include categories by name
+    }
+}
