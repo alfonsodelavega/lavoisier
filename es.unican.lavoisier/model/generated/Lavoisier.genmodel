@@ -36,6 +36,7 @@
     <genClasses ecoreClass="Lavoisier.ecore#//AggregatedReference">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//AggregatedReference/function"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//AggregatedReference/path"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//AggregatedReference/filter"/>
     </genClasses>
     <genClasses ecoreClass="Lavoisier.ecore#//TypeFilter">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//TypeFilter/typeCustomizations"/>
@@ -52,11 +53,30 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//AttributeFilter/attributes"/>
     </genClasses>
     <genClasses ecoreClass="Lavoisier.ecore#//InstancesFilter">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//InstancesFilter/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//InstancesFilter/path"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//InstancesFilter/value"/>
+    </genClasses>
+    <genClasses ecoreClass="Lavoisier.ecore#//BooleanExpression"/>
+    <genClasses ecoreClass="Lavoisier.ecore#//Comparison">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//Comparison/path"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//Comparison/value"/>
     </genClasses>
     <genClasses ecoreClass="Lavoisier.ecore#//Path">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Lavoisier.ecore#//Path/jumps"/>
     </genClasses>
+    <genClasses ecoreClass="Lavoisier.ecore#//AndConjunction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//AndConjunction/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//AndConjunction/right"/>
+    </genClasses>
+    <genClasses ecoreClass="Lavoisier.ecore#//OrConjunction">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//OrConjunction/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Lavoisier.ecore#//OrConjunction/right"/>
+    </genClasses>
+    <genClasses ecoreClass="Lavoisier.ecore#//Equality"/>
+    <genClasses ecoreClass="Lavoisier.ecore#//Inequality"/>
+    <genClasses ecoreClass="Lavoisier.ecore#//MoreThan"/>
+    <genClasses ecoreClass="Lavoisier.ecore#//MoreThanOrEqual"/>
+    <genClasses ecoreClass="Lavoisier.ecore#//LessThan"/>
+    <genClasses ecoreClass="Lavoisier.ecore#//LessThanOrEqual"/>
   </genPackages>
 </genmodel:GenModel>

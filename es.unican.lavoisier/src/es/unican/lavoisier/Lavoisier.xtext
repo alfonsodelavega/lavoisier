@@ -36,6 +36,7 @@ SimpleReference:
 
 AggregatedReference:
   'calculate' name=ID 'as' function=AggregationFunction '('path=Path')'
+  (filter=InstancesFilter)?
   ('by' referenceId=Path (instancesFilter=InstancesFilter)?)?
 ;
 
@@ -63,7 +64,38 @@ AttributeFilter:
   '['attributes+=ID (',' attributes+=ID)*']';
 
 InstancesFilter:
-  'where' name=ID '=' value=STRING;
+  'where' path=Path '=' value=Value |
+  'where' path=Path '>=' value=Value;
+
+BooleanExpression returns BooleanExpression:
+  AndConjunction;
+
+AndConjunction returns BooleanExpression:
+  OrConjunction ({AndConjunction.left=current} "and" right=OrConjunction)*;
+
+OrConjunction returns BooleanExpression:
+  Primary ({OrConjunction.left=current} "or" right=Primary)*;
+
+Primary returns BooleanExpression:
+  Comparison | '(' AndConjunction ')';
+
+Comparison:
+  {Equality}
+  path=Path '=' value=STRING |
+  {Inequality}
+  path=Path '!=' value=STRING |
+  {MoreThan}
+  path=Path '>' value=STRING |
+  {MoreThanOrEqual}
+  path=Path '>=' value=STRING |
+  {LessThan}
+  path=Path '<' value=STRING |
+  {LessThanOrEqual}
+  path=Path '<=' value=STRING;
 
 Path:
   jumps+=ID ('.'jumps+=ID)*;
+
+Value:
+  STRING | INT;
+

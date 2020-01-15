@@ -3,13 +3,18 @@
  */
 package es.unican.lavoisier.generator
 
+import com.google.inject.Inject
 import es.unican.lavoisier.domainModelProvider.DomainModelProvider
 import es.unican.lavoisier.lavoisier.Dataset
 import es.unican.lavoisier.lavoisier.Datasets
 import java.util.Collections
+import org.eclipse.emf.ecore.EPackage
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.generator.IGenerator
+import org.eclipse.xtext.resource.IResourceDescription
+import org.eclipse.xtext.resource.IResourceDescriptions
+import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 
 /**
  * Generates code from your model files on save.
@@ -18,25 +23,35 @@ import org.eclipse.xtext.generator.IGenerator
  */
 class LavoisierGenerator implements IGenerator {
 
-//  private EPackage domainModel
-//  private Resource domainInstanceResource
+  private EPackage domainModel
+  private Resource domainInstanceResource
 
-  private boolean verbose = true;
+  private boolean verbose = false;
+
+  @Inject
+  private ResourceDescriptionsProvider resourceDescriptionsProvider;
+
+  def public Iterable<IResourceDescription> getResourceDescriptionsFor() {
+      val IResourceDescriptions xtextIndex = resourceDescriptionsProvider.createResourceDescriptions()
+      return xtextIndex.allResourceDescriptions
+  }
 
   new() {
     super()
     DomainModelProvider.init()
   }
 
-
   override void doGenerate(Resource resource, IFileSystemAccess fsa) {
     val datasets = resource.getContents().get(0) as Datasets
     // Reload domain metamodel and model if changes are present
-//    DomainModelProvider::loadDomainModelResources(resource.resourceSet,
-//                             datasets.domainModelNSURI,
-//                             datasets.domainModelInstance);
-//    domainModel = DomainModelProvider::domainModel
-//    domainInstanceResource = DomainModelProvider::domainInstanceResource
+    DomainModelProvider::loadDomainModelResources(resource.resourceSet,
+                             datasets.domainModelNSURI,
+                             datasets.domainModelInstance);
+    domainModel = DomainModelProvider::domainModel
+    domainInstanceResource = DomainModelProvider::domainInstanceResource
+    println(domainModel)
+    println(domainInstanceResource)
+
     // Projections model file (debugging and verbose purposes)
     if (verbose) {
       val fileUri = resource.URI;
