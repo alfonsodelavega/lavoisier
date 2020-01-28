@@ -5,42 +5,41 @@ generate lavoisier "http://www.unican.es/lavoisier/Lavoisier"
 Datasets:
   "domainModelNSURI" + domainModelNSURI=STRING
   "domainModelInstance" + domainModelInstance=STRING
-  (datasets+=Dataset)*;
+  datasets+=Dataset*;
 
 Dataset:
   'dataset' name=ID '{'
     mainClass=MainClass
-    (includedReferences+=IncludedReference)*
   '}';
 
 MainClass:
-  'mainClass' name=ID (attributeFilter=AttributeFilter)?
-  (instancesFilter=InstancesFilter)?
-  ('{'typeFilter=TypeFilter'}')?;
+  'mainClass' name=ID attributeFilter=AttributeFilter?
+  instancesFilter=InstancesFilter?
+  includedReferences+=IncludedReference*
+  typeFilter=TypeFilter?;
 
 IncludedReference:
   SimpleReference | AggregatedReference;
 
 SimpleReference:
-  'include' name=ID (attributeFilter=AttributeFilter)?
+  'include' name=ID attributeFilter=AttributeFilter?
   /*
    * An instance filter can only be used in unbounded references, so we can
    * limit its usage to those cases where a "by" pivot id is specified
    */
-  ('by' referenceId=Path
-    (instancesFilter=InstancesFilter)?)?
+  ('by' pivotingId=Path
+    instancesFilter=InstancesFilter?)?
   ('{'
-    (typeFilter=TypeFilter)?
-    (includedReferences+=IncludedReference)*
+    includedReferences+=IncludedReference*
+    typeFilter=TypeFilter?
    '}')?;
 
 AggregatedReference:
-  'calculate' name=ID 'as' function=AggregationFunction '('path=Path')'
-  (filter=InstancesFilter)?
-  ('by' referenceId=Path (instancesFilter=InstancesFilter)?)?
-;
+  'calculate' name=ID 'as' function=AggFunction '('aggValue=Path')'
+  ('by' pivotingId=Path)?
+  instancesFilter=InstancesFilter?;
 
-AggregationFunction:
+AggFunction:
   "count" | "sum" | "avg" | "max" | "min";
 
 TypeFilter:
@@ -55,20 +54,14 @@ TypeSelection:
   ('only_as' typeCustomizations+=TypeCustomization)+;
 
 TypeCustomization:
-  name=ID
-  (attributeFilter=AttributeFilter)?
-  (instancesFilter=InstancesFilter)?
-  ('{'includedReferences+=IncludedReference'}')*;
+  name=ID attributeFilter=AttributeFilter?
+  ('{'includedReferences+=IncludedReference*'}')?;
 
 AttributeFilter:
   '['attributes+=ID (',' attributes+=ID)*']';
 
-InstancesFilter:
-  'where' path=Path '=' value=Value |
-  'where' path=Path '>=' value=Value;
-
-BooleanExpression returns BooleanExpression:
-  AndConjunction;
+InstancesFilter returns BooleanExpression:
+  "where" AndConjunction;
 
 AndConjunction returns BooleanExpression:
   OrConjunction ({AndConjunction.left=current} "and" right=OrConjunction)*;
@@ -81,15 +74,15 @@ Primary returns BooleanExpression:
 
 Comparison:
   {Equality}
-  path=Path '=' value=STRING |
+  path=Path '=' value=STRING  |
   {Inequality}
   path=Path '!=' value=STRING |
   {MoreThan}
-  path=Path '>' value=STRING |
+  path=Path '>' value=STRING  |
   {MoreThanOrEqual}
   path=Path '>=' value=STRING |
   {LessThan}
-  path=Path '<' value=STRING |
+  path=Path '<' value=STRING  |
   {LessThanOrEqual}
   path=Path '<=' value=STRING;
 
@@ -98,4 +91,3 @@ Path:
 
 Value:
   STRING | INT;
-

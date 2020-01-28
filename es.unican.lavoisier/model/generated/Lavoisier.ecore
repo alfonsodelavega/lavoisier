@@ -12,37 +12,36 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="mainClass" eType="#//MainClass"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="includedReferences" upperBound="-1"
-        eType="#//IncludedReference" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="MainClass">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="attributeFilter" eType="#//AttributeFilter"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="instancesFilter" eType="#//InstancesFilter"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instancesFilter" eType="#//BooleanExpression"
         containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="includedReferences" upperBound="-1"
+        eType="#//IncludedReference" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="typeFilter" eType="#//TypeFilter"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="IncludedReference">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="referenceId" eType="#//Path"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="pivotingId" eType="#//Path"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="instancesFilter" eType="#//InstancesFilter"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instancesFilter" eType="#//BooleanExpression"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SimpleReference" eSuperTypes="#//IncludedReference">
     <eStructuralFeatures xsi:type="ecore:EReference" name="attributeFilter" eType="#//AttributeFilter"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="typeFilter" eType="#//TypeFilter"
-        containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="includedReferences" upperBound="-1"
         eType="#//IncludedReference" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="typeFilter" eType="#//TypeFilter"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AggregatedReference" eSuperTypes="#//IncludedReference">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="function" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="path" eType="#//Path" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="filter" eType="#//InstancesFilter"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="aggValue" eType="#//Path"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TypeFilter">
@@ -55,18 +54,12 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="attributeFilter" eType="#//AttributeFilter"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="instancesFilter" eType="#//InstancesFilter"
-        containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="includedReferences" upperBound="-1"
         eType="#//IncludedReference" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AttributeFilter">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="attributes" unique="false"
         upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="InstancesFilter">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="path" eType="#//Path" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="BooleanExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="Comparison" eSuperTypes="#//BooleanExpression">
