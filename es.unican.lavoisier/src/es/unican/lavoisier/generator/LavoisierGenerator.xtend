@@ -3,18 +3,17 @@
  */
 package es.unican.lavoisier.generator
 
-import com.google.inject.Inject
 import es.unican.lavoisier.domainModelProvider.DomainModelProvider
 import es.unican.lavoisier.lavoisier.Dataset
 import es.unican.lavoisier.lavoisier.Datasets
+import es.unican.lavoisier.lavoisier.MainClass
 import java.util.Collections
+import java.util.List
+import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EPackage
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.generator.IGenerator
-import org.eclipse.xtext.resource.IResourceDescription
-import org.eclipse.xtext.resource.IResourceDescriptions
-import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
 
 /**
  * Generates code from your model files on save.
@@ -23,18 +22,10 @@ import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider
  */
 class LavoisierGenerator implements IGenerator {
 
-  private EPackage domainModel
-  private Resource domainInstanceResource
+  EPackage domainModel
+  Resource domainInstanceResource
 
-  private boolean verbose = false;
-
-  @Inject
-  private ResourceDescriptionsProvider resourceDescriptionsProvider;
-
-  def public Iterable<IResourceDescription> getResourceDescriptionsFor() {
-      val IResourceDescriptions xtextIndex = resourceDescriptionsProvider.createResourceDescriptions()
-      return xtextIndex.allResourceDescriptions
-  }
+  boolean verbose = false;
 
   new() {
     super()
@@ -43,16 +34,13 @@ class LavoisierGenerator implements IGenerator {
 
   override void doGenerate(Resource resource, IFileSystemAccess fsa) {
     val datasets = resource.getContents().get(0) as Datasets
-    // Reload domain metamodel and model if changes are present
+    // Load domain metamodel and model
     DomainModelProvider::loadDomainModelResources(resource.resourceSet,
                              datasets.domainModelNSURI,
                              datasets.domainModelInstance);
     domainModel = DomainModelProvider::domainModel
     domainInstanceResource = DomainModelProvider::domainInstanceResource
-    println(domainModel)
-    println(domainInstanceResource)
-
-    // Projections model file (debugging and verbose purposes)
+    // Abstract syntax instance model (debugging and verbose purposes)
     if (verbose) {
       val fileUri = resource.URI;
       val modelName = fileUri.trimFileExtension().lastSegment();
@@ -61,7 +49,7 @@ class LavoisierGenerator implements IGenerator {
       modelResource.getContents().add(datasets);
       modelResource.save(Collections.EMPTY_MAP);
     }
-    // Generating a csv file for each dataset/projection declared
+    // Generating a csv file for each dataset specification
     for (dataset: datasets.datasets) {
       createTabularData(dataset, fsa)
     }
@@ -69,8 +57,24 @@ class LavoisierGenerator implements IGenerator {
 
 
   def void createTabularData(Dataset dataset, IFileSystemAccess fsa) {
-    println(dataset.name)
-    println(String.format("\tmainClass: %s\n", dataset.mainClass.name))
+    val generator = new DatasetGenerator()
+    generator.addColumnNames(dataset.mainClass.getAttributes)
+    fsa.generateFile(String.format("%s.csv", dataset.name),
+                     generator.toString())
+  }
+
+  def List<String> getAttributes(MainClass mc) {
+    val eClass = getEclass(mc.name)
+    return eClass.EAttributes.map[attr | attr.name]
+  }
+
+  def getEclass(String className) {
+    for (element : domainModel.EClassifiers) {
+      if (element instanceof EClass && element.name.equals(className)) {
+        return element as EClass
+      }
+    }
+    return null
   }
 
 //
