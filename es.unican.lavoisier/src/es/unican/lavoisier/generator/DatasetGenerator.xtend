@@ -1,29 +1,45 @@
 package es.unican.lavoisier.generator
 
 import java.util.ArrayList
+import java.util.HashMap
 import java.util.List
+import java.util.Map
+import org.eclipse.emf.ecore.EObject
 
 class DatasetGenerator {
 
+  List<EObject> instances
   List<String> columnNames
-  List<List<ValueWrapper>> rows
+  Map<EObject, List<ValueWrapper>> rows
 
-  new() {
+  new(List<EObject> instances) {
+    this.instances = instances
     columnNames = new ArrayList<String>
-    rows = new ArrayList<List<ValueWrapper>>
+    rows = new HashMap<EObject,List<ValueWrapper>>
   }
 
   override String toString() {
+    rows.keySet
     val s = new StringBuilder
     s.append(columnNames.join(",")).append("\n")
-    for (row : rows) {
-      s.append(row.map[value | value.toString()].join(",")).append("\n")
+    for (instance : instances) {
+      s.append(rows.get(instance).map[value |
+                                      value.toString()].join(",")).append("\n")
     }
     return s.toString
   }
 
-  def addColumnNames(List<String> names) {
-    columnNames.addAll(names)
+  def addColumnSet(ColumnSet columnSet) {
+    columnNames.addAll(columnSet.getColumnNames())
+    val columnSetRows = columnSet.rows
+    for (instance : columnSetRows.keySet) {
+      if (rows.get(instance) == null) {
+        rows.put(instance,
+                 new ArrayList<ValueWrapper>(columnSetRows.get(instance)))
+      } else {
+        rows.get(instance).addAll(columnSetRows.get(instance))
+      }
+    }
   }
 
 }

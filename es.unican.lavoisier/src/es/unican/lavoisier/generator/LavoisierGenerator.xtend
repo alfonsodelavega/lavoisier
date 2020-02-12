@@ -6,11 +6,17 @@ package es.unican.lavoisier.generator
 import es.unican.lavoisier.domainModelProvider.DomainModelProvider
 import es.unican.lavoisier.lavoisier.Dataset
 import es.unican.lavoisier.lavoisier.Datasets
+import es.unican.lavoisier.lavoisier.IncludedReference
 import es.unican.lavoisier.lavoisier.MainClass
+import es.unican.lavoisier.lavoisier.SimpleReference
+import java.util.ArrayList
 import java.util.Collections
 import java.util.List
+import org.eclipse.emf.ecore.EAttribute
 import org.eclipse.emf.ecore.EClass
+import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.EPackage
+import org.eclipse.emf.ecore.EReference
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.generator.IGenerator
@@ -23,9 +29,10 @@ import org.eclipse.xtext.generator.IGenerator
 class LavoisierGenerator implements IGenerator {
 
   EPackage domainModel
-  Resource domainInstanceResource
+  Resource instancesResource
 
-  boolean verbose = false;
+  boolean verbose = true
+  String separator = "_"
 
   new() {
     super()
@@ -39,7 +46,7 @@ class LavoisierGenerator implements IGenerator {
                              datasets.domainModelNSURI,
                              datasets.domainModelInstance);
     domainModel = DomainModelProvider::domainModel
-    domainInstanceResource = DomainModelProvider::domainInstanceResource
+    instancesResource = DomainModelProvider::domainInstanceResource
     // Abstract syntax instance model (debugging and verbose purposes)
     if (verbose) {
       val fileUri = resource.URI;
@@ -55,26 +62,92 @@ class LavoisierGenerator implements IGenerator {
     }
   }
 
-
   def void createTabularData(Dataset dataset, IFileSystemAccess fsa) {
-    val generator = new DatasetGenerator()
-    generator.addColumnNames(dataset.mainClass.getAttributes)
-    fsa.generateFile(String.format("%s.csv", dataset.name),
-                     generator.toString())
+    val instances = dataset.mainClass.instances
+    val generator = new DatasetGenerator(instances)
+    // main class attributes
+    generator.addColumnSet(
+        getMainClassAttributeColumns(dataset.mainClass, instances))
+    // any reference
+    for (reference : dataset.mainClass.includedReferences) {
+      generator.addColumnSet(getReferenceColumns(dataset.mainClass.name.EClass,
+                                                 instances, reference))
+    }
+    val generatedDataset = generator.toString()
+    if (verbose) {
+      println("################################################")
+      println(String.format("Dataset: %s", dataset.name))
+      println(generatedDataset.replace(',', '\t'))
+    }
+    fsa.generateFile(String.format("%s.csv", dataset.name), generatedDataset)
   }
 
-  def List<String> getAttributes(MainClass mc) {
-    val eClass = getEclass(mc.name)
-    return eClass.EAttributes.map[attr | attr.name]
+  def List<EObject> getInstances(MainClass mc) {
+    return instancesResource.allContents.filter[
+        element | element.eClass.name.equals(mc.name)].toList
   }
 
-  def getEclass(String className) {
+  def ColumnSet getMainClassAttributeColumns(MainClass mainClass,
+      List<EObject> instances) {
+    val columnSet = new ColumnSet
+    val attributes = mainClass.getAttributes
+    columnSet.addColumnNames(attributes.map[attr | attr.name])
+    for (instance : instances) {
+      val attributeValues = new ArrayList<ValueWrapper>()
+      for (attribute : attributes) {
+        attributeValues.add(new ValueWrapper(instance.eGet(attribute)))
+      }
+      columnSet.addColumnValues(instance, attributeValues)
+    }
+    return columnSet
+  }
+
+  def List<EAttribute> getAttributes(MainClass mc) {
+    return mc.name.EClass.EAttributes
+  }
+
+  def getEClass(String className) {
     for (element : domainModel.EClassifiers) {
       if (element instanceof EClass && element.name.equals(className)) {
         return element as EClass
       }
     }
     return null
+  }
+
+  def ColumnSet getReferenceColumns(EClass eClass,
+      List<EObject> instances, IncludedReference reference) {
+    val columnSet = new ColumnSet
+    // ecore eReference of a lavoisier IncludedReference
+    val eReference = getEReference(eClass, reference)
+    if (reference instanceof SimpleReference && eReference.upperBound == 1) {
+      val refAttributes = reference.getAttributes(eReference)
+      columnSet.addColumnNames(refAttributes.map[attr |
+          String.format("%s%s%s", reference.name, separator, attr.name)])
+      for (instance : instances) {
+        // check if the reference is populated, if not add a blank column for
+        // each attribute
+        val refObject = instance.eGet(eReference) as EObject
+        val attributeValues = new ArrayList<ValueWrapper>()
+        for (attribute : refAttributes) {
+          if (refObject != null) {
+            attributeValues.add(new ValueWrapper(refObject.eGet(attribute)))
+          } else {
+            attributeValues.add(new ValueWrapper(""))
+          }
+        }
+        columnSet.addColumnValues(instance, attributeValues)
+      }
+    }
+    return columnSet
+  }
+
+  def getEReference(EClass eClass, IncludedReference reference) {
+      return eClass.getEStructuralFeature(reference.name) as EReference
+  }
+
+  def List<EAttribute> getAttributes(IncludedReference ref, EReference eRef) {
+    return eRef.EReferenceType.EAttributes
   }
 
 //
