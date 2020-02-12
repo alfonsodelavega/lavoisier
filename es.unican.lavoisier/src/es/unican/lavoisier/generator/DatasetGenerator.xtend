@@ -1,21 +1,15 @@
 package es.unican.lavoisier.generator
 
-import java.util.ArrayList
-import java.util.HashMap
 import java.util.List
-import java.util.Map
 import org.eclipse.emf.ecore.EObject
 
-class DatasetGenerator {
+class DatasetGenerator extends ColumnSet {
 
   List<EObject> instances
-  List<String> columnNames
-  Map<EObject, List<ValueWrapper>> rows
 
   new(List<EObject> instances) {
+    super()
     this.instances = instances
-    columnNames = new ArrayList<String>
-    rows = new HashMap<EObject,List<ValueWrapper>>
   }
 
   override String toString() {
@@ -28,18 +22,4 @@ class DatasetGenerator {
     }
     return s.toString
   }
-
-  def addColumnSet(ColumnSet columnSet) {
-    columnNames.addAll(columnSet.getColumnNames())
-    val columnSetRows = columnSet.rows
-    for (instance : columnSetRows.keySet) {
-      if (rows.get(instance) == null) {
-        rows.put(instance,
-                 new ArrayList<ValueWrapper>(columnSetRows.get(instance)))
-      } else {
-        rows.get(instance).addAll(columnSetRows.get(instance))
-      }
-    }
-  }
-
 }

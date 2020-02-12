@@ -35,4 +35,17 @@ class ColumnSet {
       rows.get(instance).addAll(values)
     }
   }
+
+  def addColumnSet(ColumnSet columnSet) {
+    columnNames.addAll(columnSet.getColumnNames())
+    val columnSetRows = columnSet.rows
+    for (instance : columnSetRows.keySet) {
+      if (rows.get(instance) == null) {
+        rows.put(instance,
+                 new ArrayList<ValueWrapper>(columnSetRows.get(instance)))
+      } else {
+        rows.get(instance).addAll(columnSetRows.get(instance))
+      }
+    }
+  }
 }

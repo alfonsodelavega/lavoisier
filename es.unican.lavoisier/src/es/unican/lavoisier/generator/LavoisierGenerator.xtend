@@ -69,15 +69,16 @@ class LavoisierGenerator implements IGenerator {
     generator.addColumnSet(
         getMainClassAttributeColumns(dataset.mainClass, instances))
     // any reference
+    val context = new ReferenceContext(dataset.mainClass.name.EClass)
     for (reference : dataset.mainClass.includedReferences) {
-      generator.addColumnSet(getReferenceColumns(dataset.mainClass.name.EClass,
+      generator.addColumnSet(getReferenceColumns(context,
                                                  instances, reference))
     }
     val generatedDataset = generator.toString()
     if (verbose) {
       println("################################################")
       println(String.format("Dataset: %s", dataset.name))
-      println(generatedDataset.replace(',', '\t'))
+      println(generatedDataset.replace(",", "\t\t"))
     }
     fsa.generateFile(String.format("%s.csv", dataset.name), generatedDataset)
   }
@@ -115,19 +116,19 @@ class LavoisierGenerator implements IGenerator {
     return null
   }
 
-  def ColumnSet getReferenceColumns(EClass eClass,
+  def ColumnSet getReferenceColumns(ReferenceContext context,
       List<EObject> instances, IncludedReference reference) {
     val columnSet = new ColumnSet
     // ecore eReference of a lavoisier IncludedReference
-    val eReference = getEReference(eClass, reference)
+    val eReference = getEReference(context.currentEClass, reference)
     if (reference instanceof SimpleReference && eReference.upperBound == 1) {
       val refAttributes = reference.getAttributes(eReference)
       columnSet.addColumnNames(refAttributes.map[attr |
-          String.format("%s%s%s", reference.name, separator, attr.name)])
+          context.getReferenceAttributeName(separator, reference.name, attr.name)])
       for (instance : instances) {
         // check if the reference is populated, if not add a blank column for
         // each attribute
-        val refObject = instance.eGet(eReference) as EObject
+        val refObject = context.getValue(instance, eReference)
         val attributeValues = new ArrayList<ValueWrapper>()
         for (attribute : refAttributes) {
           if (refObject != null) {
@@ -137,6 +138,13 @@ class LavoisierGenerator implements IGenerator {
           }
         }
         columnSet.addColumnValues(instance, attributeValues)
+      }
+      for (includedRef : (reference as SimpleReference).includedReferences) {
+        val newContext = new ReferenceContext(context)
+        newContext.addReferenceJump(eReference, separator, reference.name)
+        columnSet.addColumnSet(getReferenceColumns(newContext,
+                                                   instances,
+                                                   includedRef))
       }
     }
     return columnSet
