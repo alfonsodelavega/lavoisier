@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %pluginName
-Bundle-SymbolicName: lavoisier-example;singleton:=true
+Bundle-SymbolicName: es.unican.istr.lavoisier.examples;singleton:=true
 Automatic-Module-Name: lavoisier-example
 Bundle-Version: 1.0.0.qualifier
 Bundle-ClassPath: .

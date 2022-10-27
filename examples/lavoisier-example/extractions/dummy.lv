@@ -1,5 +1,5 @@
 domainModelNSURI "http://dummy.domainModels.flandm.unican.es"
-domainModelInstance "/lavoisier-example/models/dummy.model"
+domainModelInstance "/es.unican.istr.lavoisier.examples/models/dummy.model" 
 
 // Examples from the "dummy" domain model
 // Ecore and png image are present in the  "models" folder

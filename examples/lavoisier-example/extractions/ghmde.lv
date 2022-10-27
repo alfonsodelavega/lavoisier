@@ -1,5 +1,5 @@
 domainModelNSURI "ghmde"
-domainModelInstance "/lavoisier-example/models/ghmde.model"
+domainModelInstance "/es.unican.istr.lavoisier.examples/models/ghmde.model"
 
 dataset gh01_just_developers {
   mainClass Developer

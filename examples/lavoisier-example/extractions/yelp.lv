@@ -1,5 +1,5 @@
 domainModelNSURI "http://yelp.domainModels.flandm.unican.es"
-domainModelInstance "/lavoisier-example/models/yelp.model"
+domainModelInstance "/es.unican.istr.lavoisier.examples/models/yelp.model"
 
 // reviews from Edinburgh businesses
 dataset yelp_reviews {
