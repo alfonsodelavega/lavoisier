@@ -5,7 +5,7 @@ Lavoisier is a language which allows the selection of entities from a domain mod
 You can find data selection examples in the [lavoisier-example](https://github.com/alfonsodelavega/lavoisier/tree/master/lavoisier-example) Eclipse project of this repository, or in the [lavoisier-evaluation](https://github.com/alfonsodelavega/lavoisier-evaluation) external repository where a comparison between Lavoisier and state-of-the-art technologies for data selection and formating is shown.
 
 ## Requirements
-Xtext 2.8.4.
+Xtext SDK
 
 ## Usage instructions
 
