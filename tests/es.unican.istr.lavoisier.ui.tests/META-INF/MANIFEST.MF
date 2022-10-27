@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Automatic-Module-Name: es.unican.istr.lavoisier.ui.tests
+Bundle-ManifestVersion: 2
+Bundle-Name: es.unican.istr.lavoisier.ui.tests
+Bundle-Vendor: My Company
+Bundle-Version: 1.0.0.qualifier
+Bundle-SymbolicName: es.unican.istr.lavoisier.ui.tests; singleton:=true
+Bundle-ActivationPolicy: lazy
+Require-Bundle: es.unican.istr.lavoisier.ui,
+ org.junit;bundle-version="4.12.0",
+ org.eclipse.xtext.testing,
+ org.eclipse.xtext.xbase.testing,
+ org.eclipse.xtext.junit4,
+ org.eclipse.xtext.xbase.junit,
+ org.eclipse.core.runtime,
+ org.eclipse.xtext.ui.testing,
+ org.eclipse.ui.workbench;resolution:=optional
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Export-Package: es.unican.istr.lavoisier.ui.tests;x-internal=true
