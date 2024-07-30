@@ -1,5 +1,10 @@
 # Lavoisier
 
+**Note**: A subsequent language that follows similar principles and objectives to those of Lavoisier, named Pinset (pincer/Pinsir of datasets), has been implemented on top of the Epsilon platform.
+Pinset is integrated and actively maintained as part of Epsilon, and its official documentation can be found [here](https://www.eclipse.org/epsilon/doc/pinset/).
+
+---
+
 Lavoisier is a language which allows the selection of entities from a domain model and transforms the selected entities instances into tabular-formatted data, which can be used as input of data mining algorithms for an analysis.
 
 You can find data selection examples in the [lavoisier-example](https://github.com/alfonsodelavega/lavoisier/tree/master/lavoisier-example) Eclipse project of this repository, or in the [lavoisier-evaluation](https://github.com/alfonsodelavega/lavoisier-evaluation) external repository where a comparison between Lavoisier and state-of-the-art technologies for data selection and formating is shown.
@@ -15,10 +20,6 @@ Xtext 2.8.4.
 - Right-click "es.unican.lavoisier" project and select "Run Eclipse Application".
 - In the newly opened eclipse instance, import "lavoisier-example" project.
 - The file "extractions/dummy.lv" inside that project is a simple example of dataset specifications over a domain model. CSV files are generated at src-gen folder.
-
-## Pinset
-
-[Pinset](https://www.eclipse.org/epsilon/doc/pinset/) is a language that follows similar principles and objectives to those of Lavoisier. It has been implemented on top of the [Epsilon](https://www.eclipse.org/epsilon/) platform, so its main focus is to provide a modelling tool for software engineers to extract datasets from models in a model-driven engineering context.
 
 ## How to cite
 
